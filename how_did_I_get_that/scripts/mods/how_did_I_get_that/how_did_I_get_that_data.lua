@@ -1,7 +1,7 @@
 local mod = get_mod("how_did_I_get_that")
 
 return {
-	name = "how_did_I_get_that",
+	name = mod:localize("mod_name"),
 	description = mod:localize("mod_description"),
-	is_togglable = true,
+	is_togglable = false,
 }
