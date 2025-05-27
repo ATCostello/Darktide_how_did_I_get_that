@@ -1,7 +1,6 @@
 --[[
     Name: How Did I Get That?
     Author: Alfthebigheaded
-    version: 1.0
 ]]
 
 local mod = get_mod("how_did_I_get_that")
@@ -15,16 +14,26 @@ local AchievementTypes = require("scripts/managers/achievements/achievement_type
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local UIFonts = require("scripts/managers/ui/ui_fonts")
 local MasterItems = require("scripts/backend/master_items")
+local Items = require("scripts/utilities/items")
+local ItemUtils = require("scripts/utilities/items")
+
+local ViewElementBase = require("scripts/ui/view_elements/view_element_base")
 
 local PENANCE_TRACK_ID = "dec942ce-b6ba-439c-95e2-022c5d71394d"
 local commisary_cache
 local hestias_rewards_cache = {}
 local current_penance_points = 0
+local weapon_cosmetic_items = {}
+local view_obtained_details = true
+
+mod.is_weapon_customization_installed = function(self)
+    self.weapon_customization = self.weapon_customization or get_mod("weapon_customization")
+end
 
 mod:hook_safe(CLASS.InventoryCosmeticsView, "on_enter", function(self)
     -- Load cache with items
     mod.cache_hestias(self)
-    mod.cache_commissary(self)
+    mod.cache_commissary_cosmetics(self)
 end)
 
 mod:hook_safe(CLASS.InventoryCosmeticsView, "on_exit", function(self)
@@ -33,9 +42,52 @@ mod:hook_safe(CLASS.InventoryCosmeticsView, "on_exit", function(self)
     hestias_rewards_cache = {}
 end)
 
+mod:hook_safe(CLASS.InventoryWeaponCosmeticsView, "on_enter", function(self)
+    mod.is_weapon_customization_installed(self)
+    -- Load cache with items
+    mod.cache_hestias(self)
+    mod.cache_commissary_cosmetics(self)
+end)
+
+mod:hook_safe(CLASS.InventoryWeaponCosmeticsView, "on_exit", function(self)
+    -- clear cache
+    commisary_cache = nil
+    hestias_rewards_cache = {}
+    --weapon_cosmetic_items = {}
+end)
+
+-- Hide obtained details when on extended weapon customization view.
+mod:hook_safe(CLASS.InventoryWeaponCosmeticsView, "cb_switch_tab", function(self, element)
+    if self._selected_tab_index == 3 and self.weapon_customization then
+        view_obtained_details = false
+        if self.penance_grid_view then
+            self.penance_grid_view:set_visibility(false)
+        end
+    else
+        view_obtained_details = true
+    end
+end)
+------------------------------------------------------------------------------------------------------
+--- Hooks into the inventory weapons cosmetics view, on selecting any item.
+------------------------------------------------------------------------------------------------------
+
+mod:hook_safe(CLASS.InventoryWeaponCosmeticsView, "_preview_element", function(self, element)
+    if element then
+        self.real_item = element.real_item
+        mod.display_obtained_weapon_cosmetic_view(self)
+    end
+end)
+
+------------------------------------------------------------------------------------------------------
+--- Hooks into the inventory cosmetics view, on selecting an item.
+------------------------------------------------------------------------------------------------------
 mod:hook_safe(CLASS.InventoryCosmeticsView, "_preview_element", function(self, element)
+    mod.display_obtained_cosmetic_view(self)
+end)
+
+mod.display_obtained_cosmetic_view = function(self)
     local selected_item = self._previewed_item
-    mod:dump({}, "TEST", 4)
+
     local selected_item_source = selected_item
         .source -- 1 = Penance, 2 = Commisary, 3 = Commodore's Vestures, 4 = Hestia's Blessings
 
@@ -45,17 +97,131 @@ mod:hook_safe(CLASS.InventoryCosmeticsView, "_preview_element", function(self, e
     end
 
     if selected_item_source == 1 then
-        mod.display_penances(self, selected_item)
+        mod.display_penances_inventory_view(self, selected_item)
     elseif selected_item_source == 2 then
-        mod.display_commisary(self, selected_item)
-        --elseif selected_item_source == 3 then
-        --    mod.display_commodores_vestures(self, selected_item)
+        mod.display_commisary_inventory_view(self, selected_item)
+    elseif selected_item_source == 3 then
+        mod.display_commodores_vestures(self, selected_item)
     elseif selected_item_source == 4 then
-        mod.display_hestias_blessings(self, selected_item)
+        mod.display_hestias_blessings_inventory_view(self, selected_item)
+    else
+        mod.fetch_unknown_item_source_text(self, selected_item, 0)
     end
-end)
+end
 
-mod.display_commisary = function(self, selected_item)
+mod.display_obtained_weapon_cosmetic_view = function(self, real_item)
+    local selected_item = self._previewed_item
+    local presentation_item = self._presentation_item
+    local real_item = self.real_item
+
+    -- Hide penance view if present
+    if (self.penance_grid_view) then
+        self.penance_grid_view:set_visibility(false)
+    end
+
+    if (real_item) then
+        local item_type = real_item.item_type
+        local source = real_item.source
+
+        if view_obtained_details then
+            if source == 1 then
+                mod.display_penances_weapon_view(self, real_item)
+            elseif source == 2 then
+                mod.display_commisary_weapon_view(self, real_item)
+            elseif source == 3 then
+                mod.display_commodores_vestures_weapon_view(self, real_item)
+            elseif source == 4 then
+                mod.display_hestias_blessings_weapon_view(self, real_item)
+            else
+                mod.fetch_unknown_item_source_text(self, real_item, 1)
+            end
+
+            -- Adjust font sizes and position of new text
+            -- display_name and sub_display_name are the titles for items in the weapon view
+            -- changes if extended weapon customization is installed
+            local widgets_by_name = self._widgets_by_name
+
+            if self.weapon_customization then
+                if source == 1 then
+                    widgets_by_name.sub_display_name.style.style_id_1.font_size = 24
+                    widgets_by_name.sub_display_name.offset[2] = 0
+                    widgets_by_name.display_name.style.style_id_1.font_size = 30
+                    widgets_by_name.display_name.offset[2] = 0
+                else
+                    widgets_by_name.sub_display_name.style.style_id_1.font_size = 24
+                    widgets_by_name.sub_display_name.offset[2] = 0
+                    widgets_by_name.display_name.style.style_id_1.font_size = 30
+                    widgets_by_name.display_name.offset[2] = 0
+                end
+                if self.penance_grid_view then
+                    local w = RESOLUTION_LOOKUP.width
+                    local h = RESOLUTION_LOOKUP.height
+                    local aspect_ratio = tonumber(string.format("%.1f", w / h))
+                    if aspect_ratio > 2 and aspect_ratio < 2.5 then
+                        self.penance_grid_view:set_pivot_offset(1700, 20)
+                    elseif aspect_ratio > 2.5 and aspect_ratio < 3 then
+                        self.penance_grid_view:set_pivot_offset(1900, 20)
+                    elseif aspect_ratio > 3 and aspect_ratio < 3.5 then
+                        self.penance_grid_view:set_pivot_offset(2000, 20)
+                    elseif aspect_ratio > 3.5 and aspect_ratio < 4 then
+                        self.penance_grid_view:set_pivot_offset(2300, 20)
+                    elseif aspect_ratio > 1.35 and aspect_ratio < 1.63 then
+                        self.penance_grid_view:set_pivot_offset(1250, 50)
+                    elseif aspect_ratio > 1 and aspect_ratio < 1.35 then
+                        self.penance_grid_view:set_pivot_offset(1200, 150)
+                    else
+                        self.penance_grid_view:set_pivot_offset(1200, 20)
+                    end
+                    
+                end
+            else
+                if source == 1 then
+                    widgets_by_name.sub_display_name.style.style_id_1.font_size = 24
+                    widgets_by_name.sub_display_name.offset[2] = -180
+                    widgets_by_name.display_name.style.style_id_1.font_size = 30
+                    widgets_by_name.display_name.offset[2] = -180
+                else
+                    widgets_by_name.sub_display_name.style.style_id_1.font_size = 24
+                    widgets_by_name.sub_display_name.offset[2] = -60
+                    widgets_by_name.display_name.style.style_id_1.font_size = 30
+                    widgets_by_name.display_name.offset[2] = -60
+                end
+                if self.penance_grid_view then
+                    local w = RESOLUTION_LOOKUP.width
+                    local h = RESOLUTION_LOOKUP.height
+                    local aspect_ratio = tonumber(string.format("%.1f", w / h))
+                    if aspect_ratio > 2 and aspect_ratio < 2.5 then
+                        self.penance_grid_view:set_pivot_offset(1000, 800)
+                    elseif aspect_ratio > 2.5 and aspect_ratio < 3 then
+                        self.penance_grid_view:set_pivot_offset(1350, 800)
+                    elseif aspect_ratio > 3 and aspect_ratio < 3.5 then
+                        self.penance_grid_view:set_pivot_offset(1500, 800)
+                    elseif aspect_ratio > 3.5 and aspect_ratio < 4 then
+                        self.penance_grid_view:set_pivot_offset(1650, 800)
+                    elseif aspect_ratio > 1.35 and aspect_ratio < 1.63 then
+                        self.penance_grid_view:set_pivot_offset(670, 900)
+                    elseif aspect_ratio > 1 and aspect_ratio < 1.35 then
+                        self.penance_grid_view:set_pivot_offset(670, 1000)
+                    else
+                        self.penance_grid_view:set_pivot_offset(670, 800)
+                    end
+                end
+            end
+        end
+    end
+end
+
+mod.display_commodores_vestures = function(self, selected_item)
+    for i = 1, #self._side_panel_widgets do
+        self._side_panel_widgets[i].offset[2] = self._side_panel_widgets[i].offset[2] + 76
+    end
+end
+
+------------------------------------------------------------------------------------------------------
+--- For the inventory cosmetics view, displays the ordo docket cost of commisary items.
+---@param selected_item any The selected item from the _preview_element function.
+------------------------------------------------------------------------------------------------------
+mod.display_commisary_inventory_view = function(self, selected_item)
     local selected_slot = self._selected_slot
     local selected_slot_name = selected_slot.name
     local selected_item_sku_name = selected_item.display_name
@@ -70,21 +236,27 @@ mod.display_commisary = function(self, selected_item)
             if selected_item_sku_name == offer_sku_name then
                 selected_item_cost = offer.price.amount.amount
 
+                local text = mod:localize("ordo_docket_amount_text"):gsub("!content",
+                    mod.format_number(selected_item_cost))
+
                 if selected_item_cost > 0 then
                     self._side_panel_widgets[startpos + 1].content.text = self._side_panel_widgets[startpos + 1].content
-                        .text ..
-                        " for " .. mod.format_number(selected_item_cost) .. " gold"
+                        .text .. text
                 end
                 break
             end
         end
     else
-        mod.cache_commissary(self)
+        mod.cache_commissary_cosmetics(self)
     end
 end
 
 
-mod.display_penances = function(self, selected_item)
+------------------------------------------------------------------------------------------------------
+--- For the inventory cosmetics view, gathers and displays required penances for the selected item in a grid view.
+---@param selected_item any The selected item from the _preview_element function.
+------------------------------------------------------------------------------------------------------
+mod.display_penances_inventory_view = function(self, selected_item)
     local penance_list = {}
 
     local item_penance = AchievementUIHelper.get_acheivement_by_reward_item(selected_item)
@@ -107,7 +279,26 @@ mod.display_penances = function(self, selected_item)
         self.penance_grid_view = self:_add_element(ViewElementGrid, "penance_grid", layer, penance_grid_settings)
         self.penance_grid_view:present_grid_layout({}, {})
         self.penance_grid_view:set_visibility(true)
-        self.penance_grid_view:set_pivot_offset(570, 750)
+
+        local w = RESOLUTION_LOOKUP.width
+        local h = RESOLUTION_LOOKUP.height
+        local aspect_ratio = tonumber(string.format("%.1f", w / h))
+        if aspect_ratio > 2 and aspect_ratio < 2.5 then
+            self.penance_grid_view:set_pivot_offset(900, 750)
+        elseif aspect_ratio > 2.5 and aspect_ratio < 3 then
+            self.penance_grid_view:set_pivot_offset(1250, 750)
+        elseif aspect_ratio > 3 and aspect_ratio < 3.5 then
+            self.penance_grid_view:set_pivot_offset(1400, 750)
+        elseif aspect_ratio > 3.5 and aspect_ratio < 4 then
+            self.penance_grid_view:set_pivot_offset(1550, 750)
+        elseif aspect_ratio > 1.35 and aspect_ratio < 1.63 then
+            self.penance_grid_view:set_pivot_offset(570, 850)
+        elseif aspect_ratio > 1 and aspect_ratio < 1.35 then
+            self.penance_grid_view:set_pivot_offset(570, 950)
+        else
+            self.penance_grid_view:set_pivot_offset(570, 750)
+        end
+
 
         for i = 1, #requiredPenances do
             local currentAchievement = AchievementUIHelper.achievement_definition_by_id(requiredPenances[i])
@@ -123,8 +314,13 @@ mod.display_penances = function(self, selected_item)
             local type = AchievementTypes[achievement_definition.type]
             local has_progress_bar = type.get_progress ~= nil
 
+            local is_completed = Managers.achievements:achievement_completed(player, achievement_id)
+
             if has_progress_bar then
                 progress, goal = type.get_progress(achievement_definition, player)
+            end
+            if is_completed and progress < goal then
+                progress = goal
             end
 
             penance_list[#penance_list + 1] = {
@@ -136,40 +332,35 @@ mod.display_penances = function(self, selected_item)
         end
 
         -- Replace default description of locked penances with an actually useful one
-        local penance_description = "Requires:"
+
+        local text = mod:localize("penance_amount_singular_text")
 
         local startpos = mod.find_obtained_text(self)
         if #self._side_panel_widgets > 2 and startpos ~= nil then
             if (#penance_list > 1) then
-                penance_description = "Requires the following " ..
-                    #penance_list .. " penances to complete:"
-            else
-                penance_description = "Requires the following penance to complete:"
+                text = mod:localize("penance_amount_multiple_text"):gsub("!content", mod.format_number(#penance_list))
             end
 
             if (self._side_panel_widgets[startpos + 2]) then
-                self._side_panel_widgets[startpos + 2].content.text = penance_description
+                self._side_panel_widgets[startpos + 2].content.text = text
             end
             -- Increase offset
             for i = 1, #self._side_panel_widgets do
-                self._side_panel_widgets[i].offset[2] = self._side_panel_widgets[i].offset[2] - 170
+                self._side_panel_widgets[i].offset[2] = -180 + (i*30)
             end
 
 
             -- Add description to unlocked penances
         elseif startpos ~= nil then
             if (#penance_list > 1) then
-                penance_description = "Requires the following " ..
-                    #penance_list .. " penances to complete:"
-            else
-                penance_description = "Requires the following penance to complete:"
+                text = mod:localize("penance_amount_multiple_text"):gsub("!content", mod.format_number(#penance_list))
             end
 
-            mod.create_text_widget(self, InventoryViewDefinitions.big_details_text_pass, penance_description)
+            mod.create_text_widget(self, InventoryViewDefinitions.big_details_text_pass, text, 8)
 
             -- Increase offset
             for i = 1, #self._side_panel_widgets do
-                self._side_panel_widgets[i].offset[2] = self._side_panel_widgets[i].offset[2] - 120
+                self._side_panel_widgets[i].offset[2] = -180 + (i*30)
             end
         end
 
@@ -181,7 +372,11 @@ mod.display_penances = function(self, selected_item)
     end
 end
 
-mod.display_hestias_blessings = function(self, selected_item)
+------------------------------------------------------------------------------------------------------
+--- For the inventory cosmetics view, displays the required number of penance points required for hestias blessing items.
+---@param selected_item any The selected item from the _preview_element function.
+------------------------------------------------------------------------------------------------------
+mod.display_hestias_blessings_inventory_view = function(self, selected_item)
     local hestias_penance = {}
 
     if (#hestias_rewards_cache < 1) then
@@ -197,58 +392,311 @@ mod.display_hestias_blessings = function(self, selected_item)
         end
 
         local startpos = mod.find_obtained_text(self)
-        self._side_panel_widgets[startpos + 1].content.text = self._side_panel_widgets[startpos + 1].content.text ..
-            " at " ..
-            mod.format_number(hestias_penance.points_required) .. " penance points"
+
+        local text = mod:localize("hestias_blessings_obtained_text"):gsub("!content",
+            mod.format_number(hestias_penance.points_required))
+
+        self._side_panel_widgets[startpos + 1].content.text = text
+
+        text = mod:localize("hestias_blessings_current_text"):gsub("!content", mod.format_number(current_penance_points))
 
         mod.create_text_widget(self, InventoryViewDefinitions.small_header_text_pass,
-            "You currently have " .. mod.format_number(current_penance_points) .. " penance points")
+            text, 8)
         self._side_panel_widgets[#self._side_panel_widgets].offset[2] = self._side_panel_widgets
             [#self._side_panel_widgets - 1].offset[2] + 30
-    end
-end
 
-mod.format_number = function(number)
-    return tostring(math.floor(number)):reverse():gsub("(%d%d%d)", "%1,"):gsub(",(%-?)$", "%1"):reverse()
-end
-
-mod.create_text_widget = function(self, pass_template, text)
-    local y_offset = 8
-    local scenegraph_id = "side_panel_area"
-    local max_width = self._ui_scenegraph[scenegraph_id].size[1]
-    local widgets = self._side_panel_widgets
-
-    local widget_definition = UIWidget.create_definition(pass_template, scenegraph_id, nil, {
-        max_width,
-        0,
-    })
-    local widget = self:_create_widget(string.format("side_panel_widget_%d", #widgets), widget_definition)
-
-    widget.content.text = text
-    widget.offset[2] = y_offset
-
-    local widget_text_style = widget.style.text
-    local text_options = UIFonts.get_font_options_by_style(widget.style.text)
-    local _, text_height = self:_text_size(text, widget_text_style.font_type, widget_text_style.font_size, {
-        max_width,
-        math.huge,
-    }, text_options)
-
-    y_offset = y_offset + text_height
-    widget.content.size[2] = text_height
-    widgets[#widgets + 1] = widget
-
-    return widget
-end
-
-mod.find_obtained_text = function(self)
-    for i = 1, #self._side_panel_widgets do
-        if (self._side_panel_widgets[i].content.text == "OBTAINED FROM:") then
-            return i
+        for i = 1, #self._side_panel_widgets do
+            self._side_panel_widgets[i].offset[2] = self._side_panel_widgets[i].offset[2]
         end
     end
 end
 
+------------------------------------------------------------------------------------------------------
+--- For the inventory cosmetics view, displays the required number of penance points required for hestias blessing items.
+---@param selected_item any The selected item from the _preview_element function.
+------------------------------------------------------------------------------------------------------
+mod.display_commisary_weapon_view = function(self, selected_item)
+    local item_name = selected_item.display_name
+    local selected_item_cost = 0
+
+    if commisary_cache ~= nil then
+        local offers = commisary_cache.offers
+        for i = 1, #offers do
+            local offer = offers[i]
+            local offer_sku_name = offer.sku.name
+
+            if item_name == offer_sku_name then
+                selected_item_cost = offer.price.amount.amount
+
+                local widgets_by_name = self._widgets_by_name
+
+                local text = mod:localize("ordo_docket_amount_text"):gsub("!content",
+                    mod.format_number(selected_item_cost))
+
+                if view_obtained_details then
+                    local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
+                    widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text ..
+                        "\n\n{#color(113,126,103)}" .. obtained_desc ..
+                        "\n{#color(216,229,207)}" .. Localize("loc_cosmetics_vendor_view_title") ..
+                        text
+                end
+                break
+            end
+        end
+    else
+        mod.cache_commissary_cosmetics(self)
+    end
+end
+
+------------------------------------------------------------------------------------------------------
+--- Displays penance info for weapon cosmetics
+---@param selected_item any The selected item from the _preview_element function.
+------------------------------------------------------------------------------------------------------
+mod.display_penances_weapon_view = function(self, selected_item)
+    local penance_list = {}
+
+    local item_penance = AchievementUIHelper.get_acheivement_by_reward_item(selected_item)
+
+    if (item_penance) then
+        local requiredPenances = {}
+
+        if (item_penance.achievements) then
+            requiredPenances = item_penance.achievements
+            requiredPenances = table.keys(requiredPenances)
+        else
+            table.insert(requiredPenances, 1, item_penance.id)
+        end
+
+        Definitions = mod:io_dofile("how_did_I_get_that/scripts/mods/how_did_I_get_that/how_did_I_get_that_definitions")
+
+        local penance_grid_settings = Definitions.penance_grid_settings
+        local layer = 100
+
+        self.penance_grid_view = self:_add_element(ViewElementGrid, "penance_grid", layer, penance_grid_settings)
+        self.penance_grid_view:present_grid_layout({}, {})
+        self.penance_grid_view:set_visibility(true)
+
+        for i = 1, #requiredPenances do
+            local currentAchievement = AchievementUIHelper.achievement_definition_by_id(requiredPenances[i])
+
+            local achievement_id = currentAchievement.id
+
+            local achievement_definition = Managers.achievements:achievement_definition(achievement_id)
+
+            local progress = 0
+            local goal = 1
+            local player = Managers.player:local_player_safe(1);
+
+            local type = AchievementTypes[achievement_definition.type]
+            local has_progress_bar = type.get_progress ~= nil
+
+            local is_completed = Managers.achievements:achievement_completed(player, achievement_id)
+
+            if has_progress_bar then
+                progress, goal = type.get_progress(achievement_definition, player)
+            end
+
+            if is_completed and progress < goal then
+                progress = goal
+            end
+
+            penance_list[#penance_list + 1] = {
+                widget_type = "penance_list_item",
+                achievement_definition = achievement_definition,
+                progress = progress,
+                goal = goal
+            }
+        end
+
+        -- Replace default description of locked penances with an actually useful one
+        local text = mod:localize("penance_amount_singular_text")
+
+        if (#penance_list > 1) then
+            text = mod:localize("penance_amount_multiple_text"):gsub("!content", mod.format_number(#penance_list))
+        end
+
+        local widgets_by_name = self._widgets_by_name
+        if view_obtained_details then
+            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text ..
+                "\n{#color(113,126,103)}" .. text
+        end
+
+        self.penance_grid_view:present_grid_layout(penance_list, Blueprints)
+    else
+        if (self.penance_grid_view) then
+            self.penance_grid_view:set_visibility(false)
+        end
+    end
+end
+
+------------------------------------------------------------------------------------------------------
+--- Displays weapon cosmetics information for commodores vestures
+---@param selected_item any The selected item from the _preview_element function.
+------------------------------------------------------------------------------------------------------
+mod.display_commodores_vestures_weapon_view = function(self, selected_item)
+    local widgets_by_name = self._widgets_by_name
+    if view_obtained_details then
+        local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
+
+        widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text ..
+            "\n\n{#color(113,126,103)}" .. obtained_desc ..
+            "\n{#color(216,229,207)}" .. Localize("loc_premium_store_main_title")
+    end
+end
+
+------------------------------------------------------------------------------------------------------
+--- Displays hestias blessing penance points for weapon cosmetics
+---@param selected_item any The selected item from the _preview_element function.
+------------------------------------------------------------------------------------------------------
+mod.display_hestias_blessings_weapon_view = function(self, selected_item)
+    local hestias_penance = {}
+
+    if (#hestias_rewards_cache < 1) then
+        mod.cache_hestias(self)
+    else
+        -- Find hestias penance for the selected item
+        for i = 1, #hestias_rewards_cache do
+            for j = 1, #hestias_rewards_cache[i].items do
+                if (hestias_rewards_cache[i].items[j].name == selected_item.name) then
+                    hestias_penance = hestias_rewards_cache[i]
+                end
+            end
+        end
+
+        local widgets_by_name = self._widgets_by_name
+        local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
+        local text_obtained = mod:localize("hestias_blessings_obtained_text"):gsub("!content",
+            mod.format_number(hestias_penance.points_required))
+        local text_current = mod:localize("hestias_blessings_current_text"):gsub("!content",
+            mod.format_number(current_penance_points))
+        if view_obtained_details then
+            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text ..
+                "\n\n{#color(113,126,103)}" .. obtained_desc ..
+                "\n{#color(216,229,207)}" ..
+                text_obtained ..
+                "\n{#color(113,126,103)}" .. text_current
+        end
+    end
+end
+
+mod.fetch_unknown_item_source_text = function(self, selected_item, source)
+    -- check item name (selected_item.name) contains "deluxe" ("skull_edition") or "twitch" or "atoma" (playing in first year) or "beta" or "prisoner"
+    -- check item is standard issue
+    -- if none of above display OBTAINED FROM: ++REDACTED++
+    local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
+
+    if string.find(selected_item.name, "deluxe") or string.find(selected_item.name, "skull_edition") then
+        local description = mod:localize("imperial_edition")
+        if source == 0 then
+            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
+            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
+        elseif source == 1 then
+            local widgets_by_name = self._widgets_by_name
+            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text ..
+                "\n\n{#color(113,126,103)}" .. obtained_desc ..
+                "\n{#color(216,229,207)}" .. description
+        end
+    elseif string.find(selected_item.name, "twitch") then
+        local description = mod:localize("twitch_drop")
+        if source == 0 then
+            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
+            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
+        elseif source == 1 then
+            local widgets_by_name = self._widgets_by_name
+            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text ..
+                "\n\n{#color(113,126,103)}" .. obtained_desc ..
+                "\n{#color(216,229,207)}" .. description
+        end
+    elseif string.find(selected_item.name, "atoma") or selected_item.name == "content/items/characters/player/human/backpacks/backpack_b_var_02" or selected_item.name == "content/items/2d/portrait_frames/achievements_47" or selected_item.name == "content/items/2d/portrait_frames/achievements_49" then
+        local description = mod:localize("first_year")
+        if source == 0 then
+            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
+            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
+        elseif source == 1 then
+            local widgets_by_name = self._widgets_by_name
+            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text ..
+                "\n\n{#color(113,126,103)}" .. obtained_desc ..
+                "\n{#color(216,229,207)}" .. description
+        end
+    elseif string.find(selected_item.name, "beta") then
+        local description = mod:localize("beta")
+        if source == 0 then
+            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
+            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
+        elseif source == 1 then
+            local widgets_by_name = self._widgets_by_name
+            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text ..
+                "\n\n{#color(113,126,103)}" .. obtained_desc ..
+                "\n{#color(216,229,207)}" .. description
+        end
+    elseif string.find(selected_item.name, "prisoner") or selected_item.name == "content/items/characters/player/human/gear_head/empty_headgear" or selected_item.name == "content/items/2d/portrait_frames/achievements_49" or selected_item.name == "content/items/2d/portrait_frames/portrait_frame_default" or selected_item.name == "content/items/2d/insignias/insignia_default" or selected_item.name == "content/items/animations/emotes/emote_human_personality_006_squat_01" or selected_item.name == "content/items/animations/emotes/emote_human_personality_005_kneel_01" or selected_item.name == "content/items/animations/emotes/emote_human_negative_001_refuse_01" or selected_item.name == "content/items/animations/emotes/emote_human_affirmative_001_thumbs_up_01" or selected_item.name == "content/items/animations/emotes/emote_human_greeting_002_wave_02" or selected_item.name == "content/items/animations/end_of_round/end_of_round_psyker_009" or selected_item.name == "content/items/animations/end_of_round/end_of_round_veteran_003" or selected_item.name == "content/items/animations/end_of_round/end_of_round_zealot_001" or selected_item.name == "content/items/animations/emotes/emote_ogryn_personality_005_kneel_01" or selected_item.name == "content/items/animations/emotes/emote_ogryn_negative_002_head_shake_01" or selected_item.name == "content/items/animations/emotes/emote_ogryn_personality_004_pants_01" or selected_item.name == "content/items/animations/emotes/emote_ogryn_affirmative_006_thumbs_up_02" or selected_item.name == "content/items/animations/emotes/emote_ogryn_greeting_002_wave_02" or selected_item.name == "content/items/animations/end_of_round/end_of_round_ogryn_002" or selected_item.name == "content/items/titles/title_default" then
+        local description = mod:localize("default_item")
+        if source == 0 then
+            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
+            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
+        elseif source == 1 then
+            local widgets_by_name = self._widgets_by_name
+            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text ..
+                "\n\n{#color(113,126,103)}" .. obtained_desc ..
+                "\n{#color(216,229,207)}" .. description
+        end
+    elseif string.find(selected_item.name, "pre_order") or selected_item.name == "content/items/weapons/player/trinkets/trinket_3d" then
+        local description = mod:localize("pre_order")
+        if source == 0 then
+            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
+            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
+        elseif source == 1 then
+            local widgets_by_name = self._widgets_by_name
+            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text ..
+                "\n\n{#color(113,126,103)}" .. obtained_desc ..
+                "\n{#color(216,229,207)}" .. description
+        end
+    else
+        local description = mod:localize("redacted")
+        if source == 0 then
+            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
+            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
+        elseif source == 1 then
+            local widgets_by_name = self._widgets_by_name
+            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text ..
+                "\n\n{#color(113,126,103)}" .. obtained_desc ..
+                "\n{#color(216,229,207)}" .. description
+        end
+    end
+end
+
+
+------------------------------------------------------------------------------------------------------
+--- Formats integers into nice, readable strings with comma separation.
+---@param number any The number to convert.
+---@return string any formatted number with comma separators.
+------------------------------------------------------------------------------------------------------
+mod.format_number = function(number)
+    return tostring(math.floor(number)):reverse():gsub("(%d%d%d)", "%1,"):gsub(",(%-?)$", "%1"):reverse()
+end
+
+------------------------------------------------------------------------------------------------------
+--- Finds the position of the "OBTAINED FROM:" text for the inventory cosmetics view, useful to edit the text elements.
+--- @return integer any position of the "OBTAINED FROM:" text in the _side_panel_widget element.
+--- will return -1 if not found
+------------------------------------------------------------------------------------------------------
+mod.find_obtained_text = function(self)
+    if (self._side_panel_widgets) then
+        for i = 1, #self._side_panel_widgets do
+            local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
+            if (string.find(string.upper(self._side_panel_widgets[i].content.text), obtained_desc)) then
+                return i
+            end
+        end
+    else
+        return -1
+    end
+    return -1
+end
+
+------------------------------------------------------------------------------------------------------
+--- Caches items of the hestias blessings rewards.
+------------------------------------------------------------------------------------------------------
 mod.cache_hestias = function(self)
     mod._fetch_penance_track_account_state():next(function(response)
         current_penance_points = response.state.xpTracked
@@ -334,14 +782,59 @@ mod.cache_hestias = function(self)
     end
 end
 
-mod.cache_commissary = function(self)
+------------------------------------------------------------------------------------------------------
+--- Caches cosmetic items of the commisary rewards.
+------------------------------------------------------------------------------------------------------
+mod.cache_commissary_cosmetics = function(self)
     if (commisary_cache == nil) then
         Managers.data_service.store:get_credits_cosmetics_store():next(function(data)
-            commisary_cache = data
+            Managers.data_service.store:get_credits_weapon_cosmetics_store():next(function(data2)
+                for k, v in pairs(data2.offers) do
+                    table.insert(data.offers, v)
+                end
+
+                commisary_cache = data
+            end)
         end)
     end
 end
 
+------------------------------------------------------------------------------------------------------
+--- Creates a new text widget from the passed template.
+---@param pass_template any
+---@param text any Text to be contained.
+------------------------------------------------------------------------------------------------------
+mod.create_text_widget = function(self, pass_template, text, y_offset)
+    local scenegraph_id = "side_panel_area"
+    local max_width = self._ui_scenegraph[scenegraph_id].size[1]
+    local widgets = self._side_panel_widgets
+
+    local widget_definition = UIWidget.create_definition(pass_template, scenegraph_id, nil, {
+        max_width,
+        0,
+    })
+    local widget = self:_create_widget(string.format("side_panel_widget_%d", #widgets), widget_definition)
+
+    widget.content.text = text
+    widget.offset[2] = y_offset
+
+    local widget_text_style = widget.style.text
+    local text_options = UIFonts.get_font_options_by_style(widget.style.text)
+    local _, text_height = self:_text_size(text, widget_text_style.font_type, widget_text_style.font_size, {
+        max_width,
+        math.huge,
+    }, text_options)
+
+    y_offset = y_offset + text_height
+    widget.content.size[2] = text_height
+    widgets[#widgets + 1] = widget
+
+    return widget
+end
+
+------------------------------------------------------------------------------------------------------
+--- Grabs the current penance details (e.g. penance points)
+------------------------------------------------------------------------------------------------------
 mod._fetch_penance_track_account_state = function(self)
     local backend_interface = Managers.backend.interfaces
     local penance_track = backend_interface.tracks

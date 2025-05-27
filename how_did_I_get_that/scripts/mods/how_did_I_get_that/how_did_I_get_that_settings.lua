@@ -2,7 +2,7 @@ local mod = get_mod("how_did_I_get_that")
 
 local grid_size = {
     600,
-    200
+    150
 }
 local padding = 10
 local grid_margin = 0
@@ -24,7 +24,7 @@ local grid_settings = {
         grid_margin = grid_margin,
         grid_size = grid_size,
         grid_mask_size = {
-            grid_size[1] + 40,
+            grid_size[1],
             grid_size[2]
         }
     },
