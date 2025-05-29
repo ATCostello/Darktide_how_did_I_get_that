@@ -25,7 +25,7 @@ local penance_grid_settings = {
     scrollbar_pass_templates = ScrollbarPassTemplates.terminal_scrollbar,
     scrollbar_width = ScrollbarPassTemplates.terminal_scrollbar.default_width,
     edge_padding = grid_margin * 2,
-
+    vertical_alignment = "bottom",
     scenegraph_id = {
         penance_grid_pivot = {
             vertical_alignment = "bottom",
@@ -40,6 +40,9 @@ local penance_grid_settings = {
                 -100,
                 99
             }
+        },
+        penance_grid = {
+            vertical_alignment = "bottom"
         }
     }
 }

@@ -74,6 +74,7 @@ mod:hook_safe(
         end
     end
 )
+
 ------------------------------------------------------------------------------------------------------
 --- Hooks into the inventory weapons cosmetics view, on selecting any item.
 ------------------------------------------------------------------------------------------------------
@@ -215,6 +216,7 @@ mod.display_obtained_cosmetic_view = function(self)
 end
 
 mod.display_obtained_weapon_cosmetic_view = function(self, real_item)
+
     local selected_item = self._previewed_item
     local presentation_item = self._presentation_item
     local real_item = self.real_item
@@ -322,6 +324,31 @@ mod.display_obtained_weapon_cosmetic_view = function(self, real_item)
 end
 
 mod.display_commodores_vestures = function(self, selected_item)
+
+    if selected_item and selected_item.offer then
+
+        local skin_name = selected_item.__master_item.name
+        local selected_item_cost = 0
+        local bundle = selected_item.offer.bundleInfo or nil
+
+        if bundle then
+            for _, bundleitem in pairs(bundle) do
+                if bundleitem.description.id == skin_name then
+                    selected_item_cost = bundleitem.price.amount.amount
+                end
+            end
+        else
+            selected_item_cost = selected_item.offer.price.amount.amount or 0
+        end
+
+        if selected_item_cost ~= 0 then
+            local text = mod:localize("ordo_docket_amount_text"):gsub("!content", mod.format_number(selected_item_cost))
+
+            self._side_panel_widgets[#self._side_panel_widgets - 1].content.text =
+                self._side_panel_widgets[#self._side_panel_widgets - 1].content.text .. text
+        end
+    end
+
     for i = 1, #self._side_panel_widgets do
         self._side_panel_widgets[i].offset[2] = self._side_panel_widgets[i].offset[2] + 76
     end
@@ -332,6 +359,7 @@ end
 ---@param selected_item any The selected item from the _preview_element function.
 ------------------------------------------------------------------------------------------------------
 mod.display_commisary_inventory_view = function(self, selected_item)
+
     local selected_slot = self._selected_slot
     local selected_slot_name = selected_slot.name
     local selected_item_sku_name = selected_item.display_name
@@ -344,6 +372,7 @@ mod.display_commisary_inventory_view = function(self, selected_item)
             local offer = offers[i]
             local offer_sku_name = offer.sku.name
             if selected_item_sku_name == offer_sku_name then
+
                 selected_item_cost = offer.price.amount.amount
 
                 local text = mod:localize("ordo_docket_amount_text"):gsub("!content", mod.format_number(selected_item_cost))
@@ -355,6 +384,24 @@ mod.display_commisary_inventory_view = function(self, selected_item)
                 break
             end
         end
+
+        -- if no cost was found, should be set as a redacted item
+        if selected_item_cost and selected_item_cost == 0 or selected_item_cost == nil then
+
+            -- remove all other elements left over so that we just have the nice ++redacted++ bits ;)
+            if #self._side_panel_widgets >= 3 then
+                table.remove(self._side_panel_widgets, 3)
+            end
+            if #self._side_panel_widgets >= 3 then
+                table.remove(self._side_panel_widgets, 3)
+            end
+            if #self._side_panel_widgets >= 3 then
+                table.remove(self._side_panel_widgets, 3)
+            end
+
+            mod.fetch_unknown_item_source_text(self, selected_item, 0)
+        end
+
     else
         mod.cache_commissary_cosmetics(self)
     end
@@ -390,22 +437,6 @@ mod.display_penances_inventory_view = function(self, selected_item)
 
         local w = RESOLUTION_LOOKUP.width
         local h = RESOLUTION_LOOKUP.height
-        local aspect_ratio = tonumber(string.format("%.1f", w / h))
-        if aspect_ratio > 2 and aspect_ratio < 2.5 then
-            self.penance_grid_view:set_pivot_offset(900, 750)
-        elseif aspect_ratio > 2.5 and aspect_ratio < 3 then
-            self.penance_grid_view:set_pivot_offset(1250, 750)
-        elseif aspect_ratio > 3 and aspect_ratio < 3.5 then
-            self.penance_grid_view:set_pivot_offset(1400, 750)
-        elseif aspect_ratio > 3.5 and aspect_ratio < 4 then
-            self.penance_grid_view:set_pivot_offset(1550, 750)
-        elseif aspect_ratio > 1.35 and aspect_ratio < 1.63 then
-            self.penance_grid_view:set_pivot_offset(570, 850)
-        elseif aspect_ratio > 1 and aspect_ratio < 1.35 then
-            self.penance_grid_view:set_pivot_offset(570, 950)
-        else
-            self.penance_grid_view:set_pivot_offset(570, 750)
-        end
 
         for i = 1, #requiredPenances do
             local currentAchievement = AchievementUIHelper.achievement_definition_by_id(requiredPenances[i])
@@ -467,32 +498,41 @@ mod.display_penances_inventory_view = function(self, selected_item)
         -- Replace default description of locked penances with an actually useful one
 
         local text = mod:localize("penance_amount_singular_text")
+        if (#penance_list > 1) then
+            text = mod:localize("penance_amount_multiple_text"):gsub("!content", mod.format_number(#penance_list))
+        end
+
+        local initial_offset = -150
+        if (#penance_list > 1) then
+            initial_offset = -180
+        end
 
         if #self._side_panel_widgets > 2 then
-            if (#penance_list > 1) then
-                text = mod:localize("penance_amount_multiple_text"):gsub("!content", mod.format_number(#penance_list))
-            end
-
             if (self._side_panel_widgets[#self._side_panel_widgets]) then
                 self._side_panel_widgets[#self._side_panel_widgets].content.text = text
             end
-            -- Increase offset
-            for i = 1, #self._side_panel_widgets do
-                self._side_panel_widgets[i].offset[2] = -200 + (i * 30)
-            end
         else
-            if (#penance_list > 1) then
-                text = mod:localize("penance_amount_multiple_text"):gsub("!content", mod.format_number(#penance_list))
-            end
-
-            self._side_panel_widgets[#self._side_panel_widgets].content.text =
-                self._side_panel_widgets[#self._side_panel_widgets].content.text .. text
-
-            -- Increase offset
-            for i = 1, #self._side_panel_widgets do
-                self._side_panel_widgets[i].offset[2] = -200 + (i * 30)
-            end
+            local current_text = self._side_panel_widgets[#self._side_panel_widgets].content.text or ""
+            self._side_panel_widgets[#self._side_panel_widgets].content.text = current_text .. text
         end
+
+        -- Increase offset for all widgets
+        for i = 1, #self._side_panel_widgets do
+            self._side_panel_widgets[i].offset[2] = initial_offset + (i * 25)
+        end
+
+        -- adjust position of widget to be placed below the "OBTAINED FROM" text
+        local side_panel_position = self._ui_scenegraph.side_panel_area.local_position
+        local offset_x = side_panel_position[1]
+        local offset_y = side_panel_position[2]
+
+        if (#penance_list > 1) then
+            offset_y = offset_y - 50
+        end
+
+        self.penance_grid_view:set_pivot_offset(-370, offset_y)
+        self.penance_grid_view._ui_scenegraph.pivot.vertical_alignment = "bottom"
+        self.penance_grid_view._ui_scenegraph.pivot.horizontal_alignment = "center"
 
         self.penance_grid_view:present_grid_layout(penance_list, Blueprints)
     else
@@ -522,21 +562,23 @@ mod.display_hestias_blessings_inventory_view = function(self, selected_item)
         end
 
         -- Add Cost of hestias item
-        local text = mod:localize("hestias_blessings_obtained_text"):gsub("!content", mod.format_number(hestias_penance.points_required))
+        if hestias_penance and hestias_penance.points_required then
+            local text = mod:localize("hestias_blessings_obtained_text"):gsub("!content", mod.format_number(hestias_penance.points_required))
 
-        -- add lock symbol to locked items
-        if selected_item and selected_item.__locked then
-            text = " " .. text
+            -- add lock symbol to locked items
+            if selected_item and selected_item.__locked then
+                text = " " .. text
+            end
+
+            if self._side_panel_widgets[#self._side_panel_widgets - 1] and self._side_panel_widgets[#self._side_panel_widgets - 1].content and
+                self._side_panel_widgets[#self._side_panel_widgets].content.text then
+                self._side_panel_widgets[#self._side_panel_widgets - 1].content.text = text
+            end
+
+            -- Add current amount of hestias points
+            text = mod:localize("hestias_blessings_current_text"):gsub("!content", mod.format_number(current_penance_points))
+            self._side_panel_widgets[#self._side_panel_widgets].content.text = text
         end
-
-        if self._side_panel_widgets[#self._side_panel_widgets - 1] and self._side_panel_widgets[#self._side_panel_widgets - 1].content and
-            self._side_panel_widgets[#self._side_panel_widgets].content.text then
-            self._side_panel_widgets[#self._side_panel_widgets - 1].content.text = text
-        end
-
-        -- Add current amount of hestias points
-        text = mod:localize("hestias_blessings_current_text"):gsub("!content", mod.format_number(current_penance_points))
-        self._side_panel_widgets[#self._side_panel_widgets].content.text = text
 
     end
 end
@@ -546,15 +588,20 @@ end
 ---@param selected_item any The selected item from the _preview_element function.
 ------------------------------------------------------------------------------------------------------
 mod.display_commisary_weapon_view = function(self, selected_item)
+
+    mod.cache_commissary_cosmetics(self)
+
     local item_name = selected_item.display_name
     local selected_item_cost = 0
 
     if commisary_cache ~= nil then
         local offers = commisary_cache.offers
+
         for i = 1, #offers do
             local offer = offers[i]
             local offer_sku_name = offer.sku.name
 
+            -- offer found
             if item_name == offer_sku_name then
                 selected_item_cost = offer.price.amount.amount
 
@@ -571,6 +618,11 @@ mod.display_commisary_weapon_view = function(self, selected_item)
                 end
                 break
             end
+        end
+
+        -- if no cost was found, should be set as a redacted item
+        if selected_item_cost == 0 then
+            mod.fetch_unknown_item_source_text(self, selected_item, 1)
         end
     else
         mod.cache_commissary_cosmetics(self)
@@ -735,111 +787,122 @@ mod.display_hestias_blessings_weapon_view = function(self, selected_item)
 end
 
 mod.fetch_unknown_item_source_text = function(self, selected_item, source)
-    -- check item name (selected_item.name) contains "deluxe" ("skull_edition") or "twitch" or "atoma" (playing in first year) or "beta" or "prisoner"
-    -- check item is standard issue
-    -- if none of above display OBTAINED FROM: ++REDACTED++
     local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
+    local name = selected_item.name:lower()
 
-    --mod:dump(selected_item, "selected_item")
+    dbg_unknown_item = selected_item
+    -- Remove any previous "Obtained From:" elements in _side_panel_widgets
+    if self._side_panel_widgets then
+        local widgets = self._side_panel_widgets
+        local i = #widgets
+        while i > 0 do
+            local widget = widgets[i]
+            if widget and widget.content and widget.content.text and type(widget.content.text) == "string" then
+                -- Remove if matches or contains the localized "Obtained From:" string
+                if string.find(widget.content.text, obtained_desc, 1, true) then
+                    table.remove(widgets, i)
+                    table.remove(widgets, i)
 
-    if string.find(selected_item.name, "deluxe") or string.find(selected_item.name, "skull_edition") then
-        local description = mod:localize("imperial_edition")
-        if source == 0 then
-            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
-            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
-        elseif source == 1 then
-            local widgets_by_name = self._widgets_by_name
-            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text .. "\n\n{#color(113,126,103)}" ..
-                                                                obtained_desc .. "\n{#color(216,229,207)}" .. description
+                end
+            end
+            i = i - 1
         end
-    elseif string.find(selected_item.name, "twitch") then
-        local description = mod:localize("twitch_drop")
-        if source == 0 then
-            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
-            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
-        elseif source == 1 then
-            local widgets_by_name = self._widgets_by_name
-            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text .. "\n\n{#color(113,126,103)}" ..
-                                                                obtained_desc .. "\n{#color(216,229,207)}" .. description
+    end
+
+    local special_sources = {
+        { -- Imperial/Deluxe/Skull Edition
+            patterns = {"deluxe", "skull_edition"}, desc_key = "imperial_edition"
+        }, { -- Twitch Drops
+            patterns = {"twitch"}, desc_key = "twitch_drop"
+        }, { -- First Year/Atoma
+            patterns = {"atoma"}, desc_key = "first_year", extra_names = {
+                "content/items/characters/player/human/backpacks/backpack_b_var_02", "content/items/2d/portrait_frames/achievements_47",
+                "content/items/2d/portrait_frames/achievements_49"
+            }
+        }, { -- Beta
+            patterns = {"beta"}, desc_key = "beta"
+        }, { -- Default/Prisoner
+            patterns = {"prisoner"}, desc_key = "default_item", extra_names = {
+                "content/items/characters/player/human/gear_head/empty_headgear", "content/items/2d/portrait_frames/achievements_49",
+                "content/items/2d/portrait_frames/portrait_frame_default", "content/items/2d/insignias/insignia_default",
+                "content/items/animations/emotes/emote_human_personality_006_squat_01",
+                "content/items/animations/emotes/emote_human_personality_005_kneel_01",
+                "content/items/animations/emotes/emote_human_negative_001_refuse_01",
+                "content/items/animations/emotes/emote_human_affirmative_001_thumbs_up_01",
+                "content/items/animations/emotes/emote_human_greeting_002_wave_02", "content/items/animations/end_of_round/end_of_round_psyker_009",
+                "content/items/animations/end_of_round/end_of_round_veteran_003", "content/items/animations/end_of_round/end_of_round_zealot_001",
+                "content/items/animations/emotes/emote_ogryn_personality_005_kneel_01",
+                "content/items/animations/emotes/emote_ogryn_negative_002_head_shake_01",
+                "content/items/animations/emotes/emote_ogryn_personality_004_pants_01",
+                "content/items/animations/emotes/emote_ogryn_affirmative_006_thumbs_up_02",
+                "content/items/animations/emotes/emote_ogryn_greeting_002_wave_02", "content/items/animations/end_of_round/end_of_round_ogryn_002",
+                "content/items/titles/title_default"
+            }
+        }, { -- Pre-order
+            patterns = {"pre_order"}, desc_key = "pre_order", extra_names = {"content/items/weapons/player/trinkets/trinket_3d"}
+        }, { -- Rogue Trader Crossover
+            patterns = {}, desc_key = "rogue_trader_crossover", extra_names = {"content/items/weapons/player/trinkets/trinket_18a"}
+        }, { -- Surveyor of the Storm Live Event
+            patterns = {}, desc_key = "live_event_surveyor_of_the_storm", extra_names = {"content/items/2d/insignias/insignia_94"}
+        },
+        { -- A day at the theatre Live Event
+            patterns = {}, desc_key = "live_event_day_at_the_theatre", extra_names = {"content/items/2d/insignias/insignia_event_hordes"}
+        },
+        { -- Communication Breakdown Live Event
+            patterns = {}, desc_key = "live_event_communication_breakdown", extra_names = {"content/items/2d/insignias/insignia_event_hack"}
+        },
+        { -- Admonition Ascendant Live Event
+            patterns = {}, desc_key = "live_event_admonition_ascendant", extra_names = {"content/items/2d/insignias/insignia_skull_week_2025"}
+        },
+        { -- Warhammer Fest Live Event
+            patterns = {}, desc_key = "live_event_warhammer_fest", extra_names = {"content/items/2d/portrait_frames/events_warhammer_fest_01"}
+        },
+        { -- Waking giants Live Event
+            patterns = {}, desc_key = "live_event_waking_giants", extra_names = {"content/items/2d/portrait_frames/class_ogryn_05_yellow"}
+        },
+        { -- Grandfathers Gifts Live Event
+            patterns = {}, desc_key = "live_event_grandfather_gifts", extra_names = {"content/items/2d/portrait_frames/events_poxwalker"}
+        },
+        { -- Developer Exclusive
+            patterns = {}, desc_key = "dev_exclusive", extra_names = {"content/items/2d/portrait_frames/developer_exclusive"}
+        },
+        { -- Cry Havoc Live Event
+            patterns = {}, desc_key = "live_event_cry_havoc", extra_names = {"content/items/weapons/player/trinkets/trinket_15c"}
+        }
+    }
+
+    local found = false
+    for _, entry in ipairs(special_sources) do
+
+        for _, pat in ipairs(entry.patterns) do
+            if string.find(name, pat, 1, true) then
+                found = entry
+                break
+            end
         end
-    elseif string.find(selected_item.name, "atoma") or selected_item.name == "content/items/characters/player/human/backpacks/backpack_b_var_02" or
-        selected_item.name == "content/items/2d/portrait_frames/achievements_47" or selected_item.name ==
-        "content/items/2d/portrait_frames/achievements_49" then
-        local description = mod:localize("first_year")
-        if source == 0 then
-            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
-            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
-        elseif source == 1 then
-            local widgets_by_name = self._widgets_by_name
-            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text .. "\n\n{#color(113,126,103)}" ..
-                                                                obtained_desc .. "\n{#color(216,229,207)}" .. description
+
+        if not found and entry.extra_names then
+            for _, ename in ipairs(entry.extra_names) do
+                if selected_item.name == ename then
+                    found = entry
+                    break
+                end
+            end
         end
-    elseif string.find(selected_item.name, "beta") then
-        local description = mod:localize("beta")
-        if source == 0 then
-            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
-            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
-        elseif source == 1 then
-            local widgets_by_name = self._widgets_by_name
-            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text .. "\n\n{#color(113,126,103)}" ..
-                                                                obtained_desc .. "\n{#color(216,229,207)}" .. description
+        if found then
+            break
         end
-    elseif string.find(selected_item.name, "prisoner") or selected_item.name == "content/items/characters/player/human/gear_head/empty_headgear" or
-        selected_item.name == "content/items/2d/portrait_frames/achievements_49" or selected_item.name ==
-        "content/items/2d/portrait_frames/portrait_frame_default" or selected_item.name == "content/items/2d/insignias/insignia_default" or
-        selected_item.name == "content/items/animations/emotes/emote_human_personality_006_squat_01" or selected_item.name ==
-        "content/items/animations/emotes/emote_human_personality_005_kneel_01" or selected_item.name ==
-        "content/items/animations/emotes/emote_human_negative_001_refuse_01" or selected_item.name ==
-        "content/items/animations/emotes/emote_human_affirmative_001_thumbs_up_01" or selected_item.name ==
-        "content/items/animations/emotes/emote_human_greeting_002_wave_02" or selected_item.name ==
-        "content/items/animations/end_of_round/end_of_round_psyker_009" or selected_item.name ==
-        "content/items/animations/end_of_round/end_of_round_veteran_003" or selected_item.name ==
-        "content/items/animations/end_of_round/end_of_round_zealot_001" or selected_item.name ==
-        "content/items/animations/emotes/emote_ogryn_personality_005_kneel_01" or selected_item.name ==
-        "content/items/animations/emotes/emote_ogryn_negative_002_head_shake_01" or selected_item.name ==
-        "content/items/animations/emotes/emote_ogryn_personality_004_pants_01" or selected_item.name ==
-        "content/items/animations/emotes/emote_ogryn_affirmative_006_thumbs_up_02" or selected_item.name ==
-        "content/items/animations/emotes/emote_ogryn_greeting_002_wave_02" or selected_item.name ==
-        "content/items/animations/end_of_round/end_of_round_ogryn_002" or selected_item.name == "content/items/titles/title_default" then
-        local description = mod:localize("default_item")
-        if source == 0 then
-            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
-            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
-        elseif source == 1 then
-            local widgets_by_name = self._widgets_by_name
-            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text .. "\n\n{#color(113,126,103)}" ..
-                                                                obtained_desc .. "\n{#color(216,229,207)}" .. description
-        end
-    elseif string.find(selected_item.name, "pre_order") or selected_item.name == "content/items/weapons/player/trinkets/trinket_3d" then
-        local description = mod:localize("pre_order")
-        if source == 0 then
-            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
-            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
-        elseif source == 1 then
-            local widgets_by_name = self._widgets_by_name
-            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text .. "\n\n{#color(113,126,103)}" ..
-                                                                obtained_desc .. "\n{#color(216,229,207)}" .. description
-        end
-    elseif selected_item.name == "content/items/weapons/player/trinkets/trinket_18a" then
-        local description = mod:localize("rogue_trader_crossover")
-        if source == 0 then
-            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
-            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
-        elseif source == 1 then
-            local widgets_by_name = self._widgets_by_name
-            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text .. "\n\n{#color(113,126,103)}" ..
-                                                                obtained_desc .. "\n{#color(216,229,207)}" .. description
-        end
-    else
-        local description = mod:localize("redacted")
-        if source == 0 then
-            mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 30)
-            mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 60)
-        elseif source == 1 then
-            local widgets_by_name = self._widgets_by_name
-            widgets_by_name.sub_display_name.content.text = widgets_by_name.sub_display_name.content.text .. "\n\n{#color(113,126,103)}" ..
-                                                                obtained_desc .. "\n{#color(216,229,207)}" .. description
-        end
+    end
+
+    local description = found and mod:localize(found.desc_key) or mod:localize("redacted")
+
+    if source == 0 then
+        mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, 20)
+        mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, description, 15)
+    elseif source == 1 then
+        local widgets_by_name = self._widgets_by_name
+        widgets_by_name.sub_display_name.content.text =
+            widgets_by_name.sub_display_name.content.text .. "\n\n{#color(113,126,103)}" .. obtained_desc .. "\n{#color(216,229,207)}" .. description
     end
 end
 
@@ -973,17 +1036,32 @@ mod.create_text_widget = function(self, pass_template, text, y_offset)
     local max_width = self._ui_scenegraph[scenegraph_id].size[1]
     local widgets = self._side_panel_widgets
 
+    -- Calculate y_offset to place the new widget underneath existing widgets
+    local calculated_y_offset = 0
+    if widgets and #widgets > 0 then
+        for i = 1, #widgets do
+            local w = widgets[i]
+            local widget_bottom = (w.offset and w.offset[2] or 0) + (w.content and w.content.size and w.content.size[2] or 0)
+            if widget_bottom > calculated_y_offset then
+                calculated_y_offset = widget_bottom
+            end
+        end
+    end
+    -- If a y_offset is provided, add it as extra spacing
+    if y_offset then
+        calculated_y_offset = calculated_y_offset + y_offset
+    end
+
     local widget_definition = UIWidget.create_definition(pass_template, scenegraph_id, nil, {max_width, 0})
     local widget = self:_create_widget(string.format("side_panel_widget_%d", #widgets), widget_definition)
 
     widget.content.text = text
-    widget.offset[2] = y_offset
+    widget.offset[2] = calculated_y_offset
 
     local widget_text_style = widget.style.text
     local text_options = UIFonts.get_font_options_by_style(widget.style.text)
     local _, text_height = self:_text_size(text, widget_text_style.font_type, widget_text_style.font_size, {max_width, math.huge}, text_options)
 
-    y_offset = y_offset + text_height
     widget.content.size[2] = text_height
     widgets[#widgets + 1] = widget
 

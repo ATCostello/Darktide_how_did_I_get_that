@@ -43,6 +43,9 @@ return {
 		--pl = "",
 		--["pt-br"] = ""
 	},
+	aquila_amount_text = {
+		en = " for " .. "!content" .. " Aquilas",
+	},
 	penance_amount_singular_text = {
 		en = "Requires the following penance to complete",
 		--de= "",
@@ -199,5 +202,34 @@ return {
 	},
 	rogue_trader_crossover = {
 		en = "Owlcat & Fatshark - Rogue Trader & Darktide Crossover, May 2025"
-	}
+	},
+	live_event_surveyor_of_the_storm = {
+		en = "Live Event: Surveyor of the Storm"
+	},
+	live_event_day_at_the_theatre = {
+		en = "Live Event: Day at the Theatre, Mar 2025"
+	},
+	live_event_communication_breakdown = {
+		en = "Live Event: Communication Breakdown, Apr 2025"
+	},
+	live_event_admonition_ascendant = {
+		en = "Live Event: Admonition Ascendant, May 2025"
+	},
+	live_event_warhammer_fest = {
+		en = "Live Event: Warhammer Fest"
+	},
+	live_event_waking_giants = {
+		en = "Live Event: Waking Giants, Jan 2025"
+	},
+	live_event_grandfather_gifts = {
+		en = "Live Event: Grandfather Gifts, Nov 2024"
+	},
+	dev_exclusive = {
+		en = "Fatshark developer exclusive <3"
+	},
+	live_event_cry_havoc = {
+		en = "Live Event: Cry Havoc, Dec 2024"
+	},
+
+
 }
