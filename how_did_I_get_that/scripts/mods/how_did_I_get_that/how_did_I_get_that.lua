@@ -790,7 +790,6 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
     local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
     local name = selected_item.name:lower()
 
-    dbg_unknown_item = selected_item
     -- Remove any previous "Obtained From:" elements in _side_panel_widgets
     if self._side_panel_widgets then
         local widgets = self._side_panel_widgets
