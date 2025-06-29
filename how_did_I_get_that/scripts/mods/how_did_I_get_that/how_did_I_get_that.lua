@@ -789,6 +789,10 @@ end
 mod.fetch_unknown_item_source_text = function(self, selected_item, source)
     local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
     local name = selected_item.name:lower()
+    
+    		--Clipboard.put(name)
+
+
 
     -- Remove any previous "Obtained From:" elements in _side_panel_widgets
     if self._side_panel_widgets then
@@ -810,8 +814,23 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 
     local special_sources = {
         { -- Imperial/Deluxe/Skull Edition
-            patterns = {"deluxe", "skull_edition"}, desc_key = "imperial_edition"
-        }, { -- Twitch Drops
+            patterns = {"skull_edition"}, desc_key = "imperial_edition", extra_names = { 
+
+                "content/items/2d/portrait_frames/special_deluxe_edition"
+            }
+        },
+        { -- ARBITES
+            patterns = {},  desc_key = "arbites_deluxe", extra_names = {
+                "content/items/characters/player/human/gear_head/adamant_headgear_02_var_01", 
+                "content/items/characters/player/human/gear_upperbody/adamant_upperbody_e_var_01",
+                "content/items/characters/player/human/gear_lowerbody/adamant_lowerbody_e_var_01",
+                "content/items/2d/portrait_frames/class_adamant_deluxe",
+                "content/items/characters/companion/companion_dog/gear_full/companion_dog_set_04_var_01",
+                "content/items/weapons/player/skins/powermaul/powermaul_p2_deluxe01",
+                "content/items/weapons/player/skins/shotgun/shotgun_p4_deluxe01"
+            }
+        },
+         { -- Twitch Drops
             patterns = {"twitch"}, desc_key = "twitch_drop"
         }, { -- First Year/Atoma
             patterns = {"atoma"}, desc_key = "first_year", extra_names = {
@@ -829,13 +848,19 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
                 "content/items/animations/emotes/emote_human_negative_001_refuse_01",
                 "content/items/animations/emotes/emote_human_affirmative_001_thumbs_up_01",
                 "content/items/animations/emotes/emote_human_greeting_002_wave_02", "content/items/animations/end_of_round/end_of_round_psyker_009",
-                "content/items/animations/end_of_round/end_of_round_veteran_003", "content/items/animations/end_of_round/end_of_round_zealot_001",
+                "content/items/animations/end_of_round/end_of_r`ound_veteran_003", "content/items/animations/end_of_round/end_of_round_zealot_001",
                 "content/items/animations/emotes/emote_ogryn_personality_005_kneel_01",
                 "content/items/animations/emotes/emote_ogryn_negative_002_head_shake_01",
                 "content/items/animations/emotes/emote_ogryn_personality_004_pants_01",
                 "content/items/animations/emotes/emote_ogryn_affirmative_006_thumbs_up_02",
                 "content/items/animations/emotes/emote_ogryn_greeting_002_wave_02", "content/items/animations/end_of_round/end_of_round_ogryn_002",
-                "content/items/titles/title_default"
+                "content/items/titles/title_default",
+                "content/items/characters/player/human/gear_head/adamant_headgear_01_var_01",
+                "content/items/characters/player/human/gear_upperbody/adamant_upperbody_a_var_01",
+                "content/items/characters/player/human/gear_lowerbody/adamant_lowerbody_a_var_01",
+                "content/items/characters/player/human/backpacks/empty_backpack",
+                "content/items/animations/end_of_round/end_of_round_adamant_001",
+                "content/items/characters/companion/companion_dog/gear_full/companion_dog_set_03_var_01"
             }
         }, { -- Pre-order
             patterns = {"pre_order"}, desc_key = "pre_order", extra_names = {"content/items/weapons/player/trinkets/trinket_3d"}

@@ -1,6 +1,5 @@
 local mod = get_mod("how_did_I_get_that")
 local AchievementUIHelper = require("scripts/managers/achievements/utility/achievement_ui_helper")
-local MissionBoardViewSettings = require("scripts/ui/views/mission_board_view/mission_board_view_settings")
 local Settings = mod:io_dofile("how_did_I_get_that/scripts/mods/how_did_I_get_that/how_did_I_get_that_settings")
 
 local grid_settings = Settings.grid
@@ -30,7 +29,7 @@ local blueprints = {
                 style = {
                     vertical_alignment = "top",
                     horizontal_alignment = "left",
-                    color = MissionBoardViewSettings.color_background,
+                    color = Color.terminal_background_dark(nil, true),
                     hide_background = true,
                     size = list_settings.item_size,
                     offset = {
@@ -46,7 +45,7 @@ local blueprints = {
                 value = "content/ui/materials/frames/frame_tile_2px",
                 style = {
                     scale_to_material = true,
-                    color = MissionBoardViewSettings.color_frame,
+                    color = Color.terminal_frame(nil, true),
                     offset = {
                         0,
                         0,
@@ -60,7 +59,7 @@ local blueprints = {
                 value = "content/ui/materials/frames/frame_corner_2px",
                 style = {
                     scale_to_material = true,
-                    color = MissionBoardViewSettings.color_corner,
+                    color = Color.terminal_corner(nil, true),
                     offset = {
                         0,
                         0,
@@ -103,7 +102,7 @@ local blueprints = {
                     text_vertical_alignment = "center",
                     font_type = "proxima_nova_bold",
                     font_size = list_settings.font_large,
-                    text_color = MissionBoardViewSettings.color_main_light,
+                    text_color = Color.terminal_text_header(nil, true),
                     size = list_settings.title_size,
                     offset = {
                         list_settings.main_offset,
@@ -123,7 +122,7 @@ local blueprints = {
                     text_vertical_alignment = "top",
                     scale_to_material = true,
                     font_size = list_settings.font_medium,
-                    text_color = MissionBoardViewSettings.color_gray,
+                    text_color = Color.terminal_text_body_sub_header(nil, true),
                     size = list_settings.desc_size,
                     offset = {
                         list_settings.main_offset,
@@ -143,7 +142,7 @@ local blueprints = {
                     text_vertical_alignment = "center",
                     text_horizontal_alignment = "right",
                     font_size = list_settings.font_large,
-                    text_color = MissionBoardViewSettings.color_main,
+                    text_color = Color.terminal_text_body(nil, true),
                     size = list_settings.counter_size,
                     offset = {
                         list_settings.main_offset + list_settings.title_size[1],
@@ -203,7 +202,7 @@ local blueprints = {
                 style = {
                     vertical_alignment = "top",
                     horizontal_alignment = "right",
-                    color = MissionBoardViewSettings.color_background,
+                     color = Color.terminal_background_dark(nil, true),
                     hide_background = true,
                     size = sub_list_settings.item_size,
                     offset = {
@@ -219,7 +218,7 @@ local blueprints = {
                 value = "content/ui/materials/frames/frame_tile_2px",
                 style = {
                     scale_to_material = true,
-                    color = MissionBoardViewSettings.color_frame,
+                    color = Color.terminal_frame(nil, true),
                     offset = {
                         sub_list_settings.margin_left,
                         0,
@@ -233,7 +232,7 @@ local blueprints = {
                 value = "content/ui/materials/frames/frame_corner_2px",
                 style = {
                     scale_to_material = true,
-                    color = MissionBoardViewSettings.color_corner,
+                    color = Color.terminal_corner(nil, true),
                     offset = {
                         sub_list_settings.margin_left,
                         0,
@@ -276,7 +275,7 @@ local blueprints = {
                     text_vertical_alignment = "center",
                     font_type = "proxima_nova_bold",
                     font_size = sub_list_settings.font_large,
-                    text_color = MissionBoardViewSettings.color_main_light,
+                    text_color = Color.terminal_text_header(nil, true),
                     size = sub_list_settings.title_size,
                     offset = {
                         sub_list_settings.main_offset,
@@ -296,7 +295,7 @@ local blueprints = {
                     text_vertical_alignment = "top",
                     scale_to_material = true,
                     font_size = sub_list_settings.font_medium,
-                    text_color = MissionBoardViewSettings.color_gray,
+                    text_color = Color.terminal_text_body_sub_header(nil, true),
                     size = sub_list_settings.desc_size,
                     offset = {
                         sub_list_settings.main_offset,
@@ -316,7 +315,7 @@ local blueprints = {
                     text_vertical_alignment = "center",
                     text_horizontal_alignment = "right",
                     font_size = sub_list_settings.font_large,
-                    text_color = MissionBoardViewSettings.color_main,
+                    text_color = Color.terminal_text_body(nil, true),
                     size = sub_list_settings.counter_size,
                     offset = {
                         sub_list_settings.main_offset + sub_list_settings.title_size[1],

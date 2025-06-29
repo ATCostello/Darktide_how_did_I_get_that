@@ -231,5 +231,9 @@ return {
 		en = "Live Event: Cry Havoc, Dec 2024"
 	},
 
+	arbites_deluxe = {
+		en = "Arbites Class: Deluxe Edition"
+	}
+
 
 }
