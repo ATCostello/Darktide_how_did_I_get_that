@@ -226,32 +226,25 @@ mod.display_obtained_cosmetic_view = function(self)
 	local side_panel_area_x = self._definitions.scenegraph_definition.side_panel_area.position[1]
 	local side_panel_area_y = self._definitions.scenegraph_definition.side_panel_area.position[2]
 
-	-- for old weapon customization
-	if self.weapon_customization then
-		if self.penance_grid_view then
-			local w = RESOLUTION_LOOKUP.width
-			local h = RESOLUTION_LOOKUP.height
-			local aspect_ratio = tonumber(string.format("%.1f", w / h))
-			if aspect_ratio > 2 and aspect_ratio < 2.5 then
-				self.penance_grid_view:set_pivot_offset(1700, 20)
-			elseif aspect_ratio > 2.5 and aspect_ratio < 3 then
-				self.penance_grid_view:set_pivot_offset(1900, 20)
-			elseif aspect_ratio > 3 and aspect_ratio < 3.5 then
-				self.penance_grid_view:set_pivot_offset(2000, 20)
-			elseif aspect_ratio > 3.5 and aspect_ratio < 4 then
-				self.penance_grid_view:set_pivot_offset(2300, 20)
-			elseif aspect_ratio > 1.35 and aspect_ratio < 1.63 then
-				self.penance_grid_view:set_pivot_offset(1250, 50)
-			elseif aspect_ratio > 1 and aspect_ratio < 1.35 then
-				self.penance_grid_view:set_pivot_offset(1200, 150)
-			else
-				self.penance_grid_view:set_pivot_offset(1200, 20)
-			end
-		end
-	else
-		-- Position the penance view grid
-		if self.penance_grid_view then
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 1080 + side_panel_area_y - 20)
+	if self.penance_grid_view then
+		local w = RESOLUTION_LOOKUP.width
+		local h = RESOLUTION_LOOKUP.height
+		local aspect_ratio = tonumber(string.format("%.1f", w / h))
+
+		if aspect_ratio > 2 and aspect_ratio < 2.5 then
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 800)
+		elseif aspect_ratio > 2.5 and aspect_ratio < 3 then
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 800)
+		elseif aspect_ratio > 3 and aspect_ratio < 3.5 then
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 800)
+		elseif aspect_ratio > 3.5 and aspect_ratio < 4 then
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 800)
+		elseif aspect_ratio > 1.35 and aspect_ratio < 1.63 then
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 900)
+		elseif aspect_ratio > 1 and aspect_ratio < 1.35 then
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 1000)
+		else
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 800)
 		end
 	end
 end
