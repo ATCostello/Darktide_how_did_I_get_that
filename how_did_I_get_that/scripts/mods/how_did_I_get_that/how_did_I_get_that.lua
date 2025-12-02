@@ -100,14 +100,10 @@ InventoryCosmeticsView._setup_side_panel = function(self, item, is_locked, dx, d
 		widget.offset[2] = y_offset
 
 		local widget_text_style = widget.style.text
-		local text_options = UIFonts.get_font_options_by_style(widget.style.text)
-		local _, text_height = self:_text_size(
-			text,
-			widget_text_style.font_type,
-			widget_text_style.font_size,
-			{ max_width, math.huge },
-			text_options
-		)
+		local _, text_height = self:_text_size(text, widget_text_style, {
+			max_width,
+			1080,
+		})
 
 		y_offset = y_offset + text_height
 		widget.content.size[2] = text_height
@@ -232,19 +228,19 @@ mod.display_obtained_cosmetic_view = function(self)
 		local aspect_ratio = tonumber(string.format("%.1f", w / h))
 
 		if aspect_ratio > 2 and aspect_ratio < 2.5 then
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 800)
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 800)
 		elseif aspect_ratio > 2.5 and aspect_ratio < 3 then
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 800)
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 800)
 		elseif aspect_ratio > 3 and aspect_ratio < 3.5 then
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 800)
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 800)
 		elseif aspect_ratio > 3.5 and aspect_ratio < 4 then
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 800)
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 800)
 		elseif aspect_ratio > 1.35 and aspect_ratio < 1.63 then
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 900)
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 900)
 		elseif aspect_ratio > 1 and aspect_ratio < 1.35 then
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 1000)
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 1000)
 		else
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x-20, 800)
+			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 800)
 		end
 	end
 end
@@ -1132,14 +1128,11 @@ mod.create_text_widget = function(self, pass_template, text, y_offset)
 	widget.offset[2] = calculated_y_offset
 
 	local widget_text_style = widget.style.text
-	local text_options = UIFonts.get_font_options_by_style(widget.style.text)
-	local _, text_height = self:_text_size(
-		text,
-		widget_text_style.font_type,
-		widget_text_style.font_size,
-		{ max_width, math.huge },
-		text_options
-	)
+
+	local _, text_height = self:_text_size(text, widget_text_style, {
+		max_width,
+		1080,
+	})
 
 	widget.content.size[2] = text_height
 	widgets[#widgets + 1] = widget
