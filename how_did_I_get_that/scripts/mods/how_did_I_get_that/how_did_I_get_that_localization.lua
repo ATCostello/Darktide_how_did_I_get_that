@@ -233,7 +233,27 @@ return {
 
 	arbites_deluxe = {
 		en = "Arbites Class: Deluxe Edition"
-	}
+	},
+	broker_deluxe = {
+		en = "Broker Class: Deluxe Edition"
+	},
 
-
+	live_event_the_day_of_atonement = {
+		en = "Live Event: The Day of Atonement, Dec 2025"
+	},
+	live_event_stolen_rations = {
+		en = "Live Event: Stolen Rations, Nov 2025"
+	},
+	live_event_smuggled_munitions = {
+		en = "Live Event: Smuggled Munitions, Oct 2025"
+	},
+	live_event_light_the_fuse = {
+		en = "Live Event: Light the Fuse, Aug 2025"
+	},
+	live_event_rotten_armour = {
+		en = "Live Event: Rotten Armour, Jul 2025"
+	},
+	live_event_inferno = {
+		en = "Live Event: Inferno, Jun 2025"
+	},
 }

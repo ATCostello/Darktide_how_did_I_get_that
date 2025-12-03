@@ -226,21 +226,20 @@ mod.display_obtained_cosmetic_view = function(self)
 		local w = RESOLUTION_LOOKUP.width
 		local h = RESOLUTION_LOOKUP.height
 		local aspect_ratio = tonumber(string.format("%.1f", w / h))
-
 		if aspect_ratio > 2 and aspect_ratio < 2.5 then
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 800)
+			self.penance_grid_view:set_pivot_offset(900, 800)
 		elseif aspect_ratio > 2.5 and aspect_ratio < 3 then
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 800)
+			self.penance_grid_view:set_pivot_offset(1250, 800)
 		elseif aspect_ratio > 3 and aspect_ratio < 3.5 then
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 800)
+			self.penance_grid_view:set_pivot_offset(1400, 800)
 		elseif aspect_ratio > 3.5 and aspect_ratio < 4 then
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 800)
+			self.penance_grid_view:set_pivot_offset(1550, 800)
 		elseif aspect_ratio > 1.35 and aspect_ratio < 1.63 then
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 900)
+			self.penance_grid_view:set_pivot_offset(570, 900)
 		elseif aspect_ratio > 1 and aspect_ratio < 1.35 then
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 1000)
+			self.penance_grid_view:set_pivot_offset(570, 1000)
 		else
-			self.penance_grid_view:set_pivot_offset(side_panel_area_x - 20, 800)
+			self.penance_grid_view:set_pivot_offset(570, 800)
 		end
 	end
 end
@@ -802,6 +801,7 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 	local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
 	local name = selected_item.name:lower()
 
+	-- for adding new items to the listtttt
 	--Clipboard.put(name)
 
 	-- Remove any previous "Obtained From:" elements in _side_panel_widgets
@@ -826,7 +826,6 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 			patterns = { "skull_edition" },
 			desc_key = "imperial_edition",
 			extra_names = {
-
 				"content/items/2d/portrait_frames/special_deluxe_edition",
 			},
 		},
@@ -945,6 +944,39 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 			patterns = {},
 			desc_key = "live_event_cry_havoc",
 			extra_names = { "content/items/weapons/player/trinkets/trinket_15c" },
+		},
+
+
+
+		{ -- The Day of Atonement Live Event
+			patterns = {},
+			desc_key = "live_event_the_day_of_atonement",
+			extra_names = { "content/items/2d/insignias/insignia_event_saint_b" },
+		},
+		{ -- Stolen Rations Live Event
+			patterns = {},
+			desc_key = "live_event_stolen_rations",
+			extra_names = { "content/items/weapons/player/trinkets/trinket_21a" },
+		},
+		{ -- Smuggled Munitions Live Event
+			patterns = {},
+			desc_key = "live_event_smuggled_munitions",
+			extra_names = { "content/items/2d/portrait_frames/events_plasma_smugglers" },
+		},
+		{ -- Light the Fuse Live Event
+			patterns = {},
+			desc_key = "live_event_light_the_fuse",
+			extra_names = { "content/items/2d/insignias/insignia_event_explosions" },
+		},
+		{ -- Rotten Armour Live Event
+			patterns = {},
+			desc_key = "live_event_rotten_armour",
+			extra_names = { "content/items/2d/portrait_frames/achievements_86" },
+		},
+		{ -- Inferno Live Event
+			patterns = {},
+			desc_key = "live_event_inferno",
+			extra_names = { "content/items/2d/portrait_frames/events_spring_01" },
 		},
 	}
 
