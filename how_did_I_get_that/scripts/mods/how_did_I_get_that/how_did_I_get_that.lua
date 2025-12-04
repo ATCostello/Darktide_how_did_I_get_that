@@ -432,9 +432,9 @@ mod.display_penances_inventory_view = function(self, selected_item)
 				progress, goal = type.get_progress(achievement_definition, player)
 			end
 
-			if is_completed and progress < goal then
-				progress = goal
-			end
+			--if is_completed and progress < goal then
+			--	progress = goal
+			--end
 
 			penance_list[#penance_list + 1] = {
 				widget_type = "penance_list_item",
@@ -646,9 +646,9 @@ mod.display_penances_weapon_view = function(self, selected_item)
 				progress, goal = type.get_progress(achievement_definition, player)
 			end
 
-			if is_completed and progress < goal then
-				progress = goal
-			end
+			--if is_completed and progress < goal then
+			--	progress = goal
+			--end
 
 			penance_list[#penance_list + 1] = {
 				widget_type = "penance_list_item",
