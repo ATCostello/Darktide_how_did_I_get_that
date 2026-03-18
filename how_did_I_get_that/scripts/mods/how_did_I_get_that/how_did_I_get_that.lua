@@ -207,6 +207,7 @@ mod.display_obtained_cosmetic_view = function(self)
 	end
 
 	remove_obtained_from_elements(self)
+
 	if selected_item_source == 1 then
 		mod.display_penances_inventory_view(self, selected_item)
 	elseif selected_item_source == 2 then
@@ -505,14 +506,19 @@ mod.display_penances_inventory_view = function(self, selected_item)
 			text = mod:localize("penance_amount_multiple_text"):gsub("!content", mod.format_number(#penance_list))
 		end
 
-		mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, -70)
-		mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, text, -40)
+		if text ~= "" then
+			mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, -70)
+			mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, text, -40)
 
-		self.penance_grid_view:present_grid_layout(penance_list, Blueprints)
+			self.penance_grid_view:present_grid_layout(penance_list, Blueprints)
+		else
+			mod.fetch_unknown_item_source_text(self, selected_item, 0)
+		end
 	else
 		if self.penance_grid_view then
 			self.penance_grid_view:set_visibility(false)
 		end
+		mod.fetch_unknown_item_source_text(self, selected_item, 0)
 	end
 end
 
@@ -552,6 +558,8 @@ mod.display_hestias_blessings_inventory_view = function(self, selected_item)
 			local text_available = mod:localize("hestias_blessings_current_text")
 				:gsub("!content", mod.format_number(current_penance_points))
 			mod.create_text_widget(self, InventoryViewDefinitions.small_body_text_pass, text_available, -10)
+		else
+			mod.fetch_unknown_item_source_text(self, selected_item, 0)
 		end
 	end
 end
@@ -727,6 +735,7 @@ mod.display_penances_weapon_view = function(self, selected_item)
 		if self.penance_grid_view then
 			self.penance_grid_view:set_visibility(false)
 		end
+		mod.fetch_unknown_item_source_text(self, selected_item, 1)
 	end
 end
 
@@ -793,6 +802,8 @@ mod.display_hestias_blessings_weapon_view = function(self, selected_item)
 			local text_available = mod:localize("hestias_blessings_current_text")
 				:gsub("!content", mod.format_number(current_penance_points))
 			mod.create_text_widget(self, InventoryViewDefinitions.small_body_text_pass, text_available, -10)
+		else
+			mod.fetch_unknown_item_source_text(self, selected_item, 1)
 		end
 	end
 end
@@ -945,9 +956,6 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 			desc_key = "live_event_cry_havoc",
 			extra_names = { "content/items/weapons/player/trinkets/trinket_15c" },
 		},
-
-
-
 		{ -- The Day of Atonement Live Event
 			patterns = {},
 			desc_key = "live_event_the_day_of_atonement",
@@ -978,6 +986,21 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 			desc_key = "live_event_inferno",
 			extra_names = { "content/items/2d/portrait_frames/events_spring_01" },
 		},
+		{ -- Cartel's Favour Live Event
+			patterns = {},
+			desc_key = "live_event_cartels_favour",
+			extra_names = { "content/items/2d/insignias/insignia_event_stimms" },
+		},
+		{ -- Rumbling Giants Live Event
+			patterns = {},
+			desc_key = "live_event_rumbling_giants",
+			extra_names = { "content/items/2d/insignias/insignia_event_abhuman_explosions" },
+		},
+		{ -- Deadside Patrol Live Event
+			patterns = {},
+			desc_key = "live_event_deadside_patrol",
+			extra_names = { "content/items/2d/portrait_frames/events_play_expeditions" },
+		},
 	}
 
 	local found = false
@@ -1002,7 +1025,7 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 		end
 	end
 
-	local description = found and mod:localize(found.desc_key) or mod:localize("redacted")
+	local description = found and found.desc_key and mod:localize(found.desc_key) or mod:localize("redacted")
 
 	-- 0 = character, 1 = weapon.
 	if source == 0 then

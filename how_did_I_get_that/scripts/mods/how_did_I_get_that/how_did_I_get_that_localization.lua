@@ -12,7 +12,6 @@ return {
 		--jp = "",
 		--pl = "",
 		--["pt-br"] = ""
-
 	},
 	mod_description = {
 		en = "Display unlock details for cosmetics",
@@ -27,7 +26,6 @@ return {
 		--jp = "",
 		--pl = "",
 		--["pt-br"] = ""
-
 	},
 	ordo_docket_amount_text = {
 		en = " for " .. "!content" .. " Ordo Dockets",
@@ -69,7 +67,9 @@ return {
 		--es = "",
 		--["zh-cn"] = "",
 		--["zh-tw"] = "",
-		ru = "Для завершения требуется выполнить " .. "!content" .. " Искуплений",
+		ru = "Для завершения требуется выполнить "
+			.. "!content"
+			.. " Искуплений",
 		--jp = "",
 		--pl = "",
 		--["pt-br"] = ""
@@ -201,59 +201,69 @@ return {
 		--["pt-br"] = ""
 	},
 	rogue_trader_crossover = {
-		en = "Owlcat & Fatshark - Rogue Trader & Darktide Crossover, May 2025"
+		en = "Owlcat & Fatshark - Rogue Trader & Darktide Crossover, May 2025",
 	},
 	live_event_surveyor_of_the_storm = {
-		en = "Live Event: Surveyor of the Storm"
+		en = "Live Event: Surveyor of the Storm",
 	},
 	live_event_day_at_the_theatre = {
-		en = "Live Event: Day at the Theatre, Mar 2025"
+		en = "Live Event: Day at the Theatre, Mar 2025",
 	},
 	live_event_communication_breakdown = {
-		en = "Live Event: Communication Breakdown, Apr 2025"
+		en = "Live Event: Communication Breakdown, Apr 2025",
 	},
 	live_event_admonition_ascendant = {
-		en = "Live Event: Admonition Ascendant, May 2025"
+		en = "Live Event: Admonition Ascendant, May 2025",
 	},
 	live_event_warhammer_fest = {
-		en = "Live Event: Warhammer Fest"
+		en = "Live Event: Warhammer Fest",
 	},
 	live_event_waking_giants = {
-		en = "Live Event: Waking Giants, Jan 2025"
+		en = "Live Event: Waking Giants, Jan 2025",
 	},
 	live_event_grandfather_gifts = {
-		en = "Live Event: Grandfather Gifts, Nov 2024"
+		en = "Live Event: Grandfather Gifts, Nov 2024",
 	},
 	dev_exclusive = {
-		en = "Fatshark developer exclusive <3"
+		en = "Fatshark developer exclusive <3",
 	},
 	live_event_cry_havoc = {
-		en = "Live Event: Cry Havoc, Dec 2024"
+		en = "Live Event: Cry Havoc, Dec 2024",
 	},
 
 	arbites_deluxe = {
-		en = "Arbites Class: Deluxe Edition"
+		en = "Arbites Class: Deluxe Edition",
 	},
 	broker_deluxe = {
-		en = "Broker Class: Deluxe Edition"
+		en = "Broker Class: Deluxe Edition",
 	},
 
 	live_event_the_day_of_atonement = {
-		en = "Live Event: The Day of Atonement, Dec 2025"
+		en = "Live Event: The Day of Atonement, Dec 2025",
 	},
 	live_event_stolen_rations = {
-		en = "Live Event: Stolen Rations, Nov 2025"
+		en = "Live Event: Stolen Rations, Nov 2025",
 	},
 	live_event_smuggled_munitions = {
-		en = "Live Event: Smuggled Munitions, Oct 2025"
+		en = "Live Event: Smuggled Munitions, Oct 2025",
 	},
 	live_event_light_the_fuse = {
-		en = "Live Event: Light the Fuse, Aug 2025"
+		en = "Live Event: Light the Fuse, Aug 2025",
 	},
 	live_event_rotten_armour = {
-		en = "Live Event: Rotten Armour, Jul 2025"
+		en = "Live Event: Rotten Armour, Jul 2025",
 	},
 	live_event_inferno = {
-		en = "Live Event: Inferno, Jun 2025"
+		en = "Live Event: Inferno, Jun 2025",
+	},
+
+	live_event_cartels_favour = {
+		en = "Live Event: Cartel's Favour, Feb 2026",
+	},
+	live_event_rumbling_giants = {
+		en = "Live Event: Rumbling Giants, Mar 2026",
+	},
+	live_event_deadside_patrol = {
+		en = "Live Event: Deadside Patrol, Apr 2026",
 	},
 }
