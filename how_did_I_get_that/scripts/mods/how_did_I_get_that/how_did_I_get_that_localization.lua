@@ -1,7 +1,19 @@
+local mod = get_mod("how_did_I_get_that")
+mod.version = "2.5.14"
+mod:info("How Did I Get That is installed, using version: " .. tostring(mod.version))
+
+local colours = {
+	title = "200,140,20",
+	subtitle = "226,199,126",
+	text = "169,191,153",
+}
+
 return {
 	mod_name = {
-		en = "How Did I Get That",
-		--de= "",
+		en = "{#color("
+			.. colours.title
+			.. ")} "
+			.. "{#color(0,255,0)}H{#color(0,255,13)}o{#color(0,255,27)}w {#color(0,255,40)}D{#color(0,255,54)}i{#color(0,255,67)}d {#color(0,255,81)}I {#color(0,255,95)}G{#color(0,255,108)}e{#color(0,255,122)}t {#color(0,255,135)}T{#color(0,255,149)}h{#color(0,255,162)}a{#color(0,255,176)}t{#color(0,255,190)}?{#reset()}",
 		--fr="",
 		--it="",
 		-- ko = "",
@@ -14,7 +26,24 @@ return {
 		--["pt-br"] = ""
 	},
 	mod_description = {
-		en = "Display unlock details for cosmetics",
+		en = "{#color("
+			.. colours.text
+			.. ")}"
+			.. "See details on how to obtain all cosmetics, including penance rewards, commissary items and Hestia's blessing rewards."
+			.. "{#reset()}\n\n"
+			.. "{#color("
+			.. colours.subtitle
+			.. ")}Author: "
+			.. "{#color("
+			.. colours.text
+			.. ")}Alfthebigheaded\n"
+			.. "{#color("
+			.. colours.subtitle
+			.. ")}Version: {#color("
+			.. colours.text
+			.. ")}"
+			.. mod.version
+			.. "{#reset()}",
 		--de= "",
 		--fr="",
 		--it="",
@@ -265,5 +294,15 @@ return {
 	},
 	live_event_deadside_patrol = {
 		en = "Live Event: Deadside Patrol, Apr 2026",
+	},
+
+	general_settings = {
+		en = "{#color(" .. colours.title .. ")}General Settings{#reset()}",
+	},
+	placeholder = {
+		en = "",
+	},
+	placeholder_tooltip = {
+		en = "A placeholder entry to initialise the mod menu, does not do anything yet.\nMore features may be added at some point.",
 	},
 }
