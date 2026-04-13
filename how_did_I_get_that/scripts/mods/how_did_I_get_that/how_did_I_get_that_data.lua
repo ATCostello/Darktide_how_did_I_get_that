@@ -12,10 +12,10 @@ return {
 
 				sub_widgets = {
 					{
-						setting_id = "placeholder",
+						setting_id = "mod_name_pizazz_toggle",
 						type = "checkbox",
 						default_value = true,
-						tooltip = "placeholder_tooltip",
+						tooltip = "mod_name_pizazz_tooltip",
 					},
 				},
 			},

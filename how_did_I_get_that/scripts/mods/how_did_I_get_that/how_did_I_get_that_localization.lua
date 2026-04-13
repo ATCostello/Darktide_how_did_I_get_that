@@ -1,5 +1,5 @@
 local mod = get_mod("how_did_I_get_that")
-mod.version = "2.5.14"
+mod.version = "2.5.15"
 mod:info("How Did I Get That is installed, using version: " .. tostring(mod.version))
 
 local colours = {
@@ -8,7 +8,13 @@ local colours = {
 	text = "169,191,153",
 }
 
-return {
+mod.localisation = {
+	mod_name_pizazz_toggle = {
+		en = "Enable Name Pizazz",
+	},
+	mod_name_pizazz_tooltip = {
+		en = "Toggles the rainbow colours effect on the mod name text. Requires a reload.\nIf enabled, you will get a small euphoric experience everytime you scroll through the mod menu, \nIf disabled - you will be a John Darktide and have no rainbow sprinkles (but I'll love you anyway).",
+	},
 	mod_name = {
 		en = "{#color("
 			.. colours.title
@@ -24,6 +30,25 @@ return {
 		--jp = "",
 		--pl = "",
 		--["pt-br"] = ""
+	},
+	mod_name_pizazz = {
+		en = "{#color("
+			.. colours.title
+			.. ")} "
+			.. "{#color(0,255,0)}H{#color(0,255,13)}o{#color(0,255,27)}w {#color(0,255,40)}D{#color(0,255,54)}i{#color(0,255,67)}d {#color(0,255,81)}I {#color(0,255,95)}G{#color(0,255,108)}e{#color(0,255,122)}t {#color(0,255,135)}T{#color(0,255,149)}h{#color(0,255,162)}a{#color(0,255,176)}t{#color(0,255,190)}?{#reset()}",
+		--fr="",
+		--it="",
+		-- ko = "",
+		--es = "",
+		--["zh-cn"] = "",
+		--["zh-tw"] = "",
+		ru = "Как я это получил?",
+		--jp = "",
+		--pl = "",
+		--["pt-br"] = ""
+	},
+	mod_name_boring = {
+		en = "How Did I Get That?",
 	},
 	mod_description = {
 		en = "{#color("
@@ -306,3 +331,21 @@ return {
 		en = "A placeholder entry to initialise the mod menu, does not do anything yet.\nMore features may be added at some point.",
 	},
 }
+
+mod.toggle_pizazz = function()
+	for key, values in pairs(mod.localisation) do
+		if key == "mod_name" then
+			for language, text in pairs(values) do
+				if mod:get("mod_name_pizazz_toggle") then
+					mod.localisation[key][language] = mod.localisation["mod_name_pizazz"][language]
+				else
+					mod.localisation[key][language] = mod.localisation["mod_name_boring"][language]
+				end
+			end
+		end
+	end
+end
+
+mod.toggle_pizazz()
+
+return mod.localisation
