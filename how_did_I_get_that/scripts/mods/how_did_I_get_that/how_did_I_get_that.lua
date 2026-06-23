@@ -208,13 +208,13 @@ mod.display_obtained_cosmetic_view = function(self)
 
 	remove_obtained_from_elements(self)
 
-	if selected_item_source == 1 then
+	if selected_item_source == "penance" then
 		mod.display_penances_inventory_view(self, selected_item)
-	elseif selected_item_source == 2 then
+	elseif selected_item_source == "credits_store" then
 		mod.display_commisary_inventory_view(self, selected_item)
-	elseif selected_item_source == 3 then
+	elseif selected_item_source == "premium_store" then
 		mod.display_commodores_vestures(self, selected_item)
-	elseif selected_item_source == 4 then
+	elseif selected_item_source == "penance_track" then
 		mod.display_hestias_blessings_inventory_view(self, selected_item)
 	else
 		mod.fetch_unknown_item_source_text(self, selected_item, 0)
@@ -269,19 +269,19 @@ mod.display_obtained_weapon_cosmetic_view = function(self, real_item)
 			real_item.__master_item
 			and real_item.__master_item.name == "content/items/weapons/player/trinkets/trinket_17b"
 		then
-			real_item.__master_item.source = 1
-			source = 1
+			real_item.__master_item.source = "penance"
+			source = "penance"
 		end
 
 		remove_obtained_from_elements(self)
 
-		if source == 1 then
+		if source == "penance" then
 			mod.display_penances_weapon_view(self, real_item)
-		elseif source == 2 then
+		elseif source == "credits_store" then
 			mod.display_commisary_weapon_view(self, real_item)
-		elseif source == 3 then
+		elseif source == "premium_store" then
 			mod.display_commodores_vestures_weapon_view(self, real_item)
-		elseif source == 4 then
+		elseif source == "penance_track" then
 			mod.display_hestias_blessings_weapon_view(self, real_item)
 		else
 			mod.fetch_unknown_item_source_text(self, real_item, 1)
@@ -355,6 +355,7 @@ mod.display_commisary_inventory_view = function(self, selected_item)
 	local selected_slot_name = selected_slot.name
 	local selected_item_sku_name = selected_item.display_name
 	local selected_item_cost = 0
+	local offer_found = false
 
 	if commisary_cache ~= nil then
 		local offers = commisary_cache.offers
@@ -372,12 +373,12 @@ mod.display_commisary_inventory_view = function(self, selected_item)
 				local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
 				mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, -70)
 				mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, text, -40)
-				break
+				offer_found = true
 			end
 		end
 
 		-- if no cost was found, should be set as a redacted item
-		if selected_item_cost and selected_item_cost == 0 or selected_item_cost == nil then
+		if not offer_found or selected_item_cost and selected_item_cost == 0 or selected_item_cost == nil then
 			mod.fetch_unknown_item_source_text(self, selected_item, 0)
 		end
 	else
@@ -573,6 +574,7 @@ mod.display_commisary_weapon_view = function(self, selected_item)
 
 	local item_name = selected_item.display_name
 	local selected_item_cost = 0
+	local offer_found = false
 
 	if commisary_cache ~= nil then
 		local offers = commisary_cache.offers
@@ -592,13 +594,13 @@ mod.display_commisary_weapon_view = function(self, selected_item)
 				local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
 				mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, -70)
 				mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, text, -40)
-
-				break
+				offer_found = true
 			end
 		end
 
+		mod:echo("selected_item_cost: " .. tostring(selected_item_cost) .. " : " .. tostring(offer_found))
 		-- if no cost was found, should be set as a redacted item
-		if selected_item_cost == 0 then
+		if not offer_found or selected_item_cost and selected_item_cost == 0 or selected_item_cost == nil then
 			mod.fetch_unknown_item_source_text(self, selected_item, 1)
 		end
 	else
@@ -652,11 +654,13 @@ mod.display_penances_weapon_view = function(self, selected_item)
 
 			if has_progress_bar then
 				progress, goal = type.get_progress(achievement_definition, player)
-			end
 
-			--if is_completed and progress < goal then
-			--	progress = goal
-			--end
+				if is_completed then
+					if progress < goal then
+						progress = goal
+					end
+				end
+			end
 
 			penance_list[#penance_list + 1] = {
 				widget_type = "penance_list_item",
@@ -682,9 +686,12 @@ mod.display_penances_weapon_view = function(self, selected_item)
 
 					if sub_has_progress_bar then
 						sub_progress, sub_goal = sub_type.get_progress(sub_achievement_definition, sub_player)
-					end
-					if sub_is_completed and sub_progress < sub_goal then
-						sub_progress = sub_goal
+
+						if sub_is_completed then
+							if sub_progress < sub_goal then
+								sub_progress = sub_goal
+							end
+						end
 					end
 
 					penance_list[#penance_list + 1] = {
@@ -813,7 +820,7 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 	local name = selected_item.name:lower()
 
 	-- for adding new items to the listtttt
-	--Clipboard.put(name)
+	Clipboard.put(name)
 
 	-- Remove any previous "Obtained From:" elements in _side_panel_widgets
 	if self._side_panel_widgets then
@@ -1001,9 +1008,58 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 			desc_key = "live_event_deadside_patrol",
 			extra_names = { "content/items/2d/portrait_frames/events_play_expeditions" },
 		},
+		{ -- Warhammer Skulls 2023
+			patterns = { "_skulls_" },
+			desc_key = "skulls_2023",
+			extra_names = {
+				"content/items/characters/player/ogryn/gear_head/ogryn_skulls_headgear_01",
+				"content/items/2d/portrait_frames/events_skulls_01",
+			},
+		},
+		{ -- Warhammer Fest 2023
+			patterns = { "wh_fest" },
+			desc_key = "fest_2023",
+			extra_names = { "content/items/characters/player/ogryn/gear_head/ogryn_wh_fest_headgear_01" },
+		},
+		{ -- Skitarii
+			patterns = { "dlc_cryptic_deluxe" },
+			desc_key = "cryptic_deluxe",
+			extra_names = {},
+		},
+		{ -- hive scum
+			patterns = { "dlc_broker_deluxe" },
+			desc_key = "broker_deluxe",
+			extra_names = {},
+		},
+		{ -- Live event: Nurgle's Might
+			patterns = {},
+			desc_key = "live_event_nurgles_might",
+			extra_names = { "content/items/2d/insignias/insignia_event_elite_army" },
+		},
+		{ -- Catch for commissary that should exist but dont
+			patterns = { "credits_store" },
+			desc_key = "unknown_commissary",
+			extra_names = {},
+		},
+		{ -- Catch for hestias that should exist but dont
+			patterns = { "penance_track" },
+			desc_key = "unknown_hestias",
+			extra_names = {},
+		},
+		{ -- Catch for penances that should exist but dont
+			patterns = { "penance" },
+			desc_key = "unknown_penance",
+			extra_names = {},
+		},
+		{ -- live_event_heretical_artefacts
+			patterns = {},
+			desc_key = "live_event_heretical_artefacts",
+			extra_names = { "content/items/2d/portrait_frames/portrait_frame_event_leftover" },
+		},
 	}
 
 	local found = false
+
 	for _, entry in ipairs(special_sources) do
 		for _, pat in ipairs(entry.patterns) do
 			if string.find(name, pat, 1, true) then
@@ -1020,6 +1076,16 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 				end
 			end
 		end
+
+		if not found then
+			for _, pat in ipairs(entry.patterns) do
+				if string.find(selected_item.source, pat, 1, true) then
+					found = entry
+					break
+				end
+			end
+		end
+
 		if found then
 			break
 		end

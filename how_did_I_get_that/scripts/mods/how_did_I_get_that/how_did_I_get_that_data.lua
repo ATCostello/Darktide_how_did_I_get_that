@@ -9,7 +9,6 @@ return {
 			{
 				setting_id = "general_settings",
 				type = "group",
-
 				sub_widgets = {
 					{
 						setting_id = "mod_name_pizazz_toggle",

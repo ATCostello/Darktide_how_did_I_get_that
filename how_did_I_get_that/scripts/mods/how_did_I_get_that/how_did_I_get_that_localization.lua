@@ -1,5 +1,5 @@
 local mod = get_mod("how_did_I_get_that")
-mod.version = "2.5.15"
+mod.version = "2.6.1"
 mod:info("How Did I Get That is installed, using version: " .. tostring(mod.version))
 
 local colours = {
@@ -289,7 +289,10 @@ mod.localisation = {
 		en = "Arbites Class: Deluxe Edition",
 	},
 	broker_deluxe = {
-		en = "Broker Class: Deluxe Edition",
+		en = "Hive Scum Class: Deluxe Edition",
+	},
+	cryptic_deluxe = {
+		en = "Skitarii Class: Deluxe Edition",
 	},
 
 	live_event_the_day_of_atonement = {
@@ -320,6 +323,24 @@ mod.localisation = {
 	live_event_deadside_patrol = {
 		en = "Live Event: Deadside Patrol, Apr 2026",
 	},
+	skulls_2023 = {
+		en = "Warhammer Skulls 2023",
+	},
+	fest_2023 = {
+		en = "Warhammer Fest 2023",
+	},
+	live_event_nurgles_might = {
+		en = "Live Event: Nurgle's Might, May 2026",
+	},
+	unknown_penance = {
+		en = "Penance\n(Unavailable)",
+	},
+	unknown_commissary = {
+		en = "Commissary\n(Unavailable)",
+	},
+	unknown_hestias = {
+		en = "Hestia's Blessings\n(Unavailable)",
+	},
 
 	general_settings = {
 		en = "{#color(" .. colours.title .. ")}General Settings{#reset()}",
@@ -329,6 +350,9 @@ mod.localisation = {
 	},
 	placeholder_tooltip = {
 		en = "A placeholder entry to initialise the mod menu, does not do anything yet.\nMore features may be added at some point.",
+	},
+	live_event_heretical_artefacts = {
+		en = "Live Event: Heretical Artefacts, Jun 2026",
 	},
 }
 
