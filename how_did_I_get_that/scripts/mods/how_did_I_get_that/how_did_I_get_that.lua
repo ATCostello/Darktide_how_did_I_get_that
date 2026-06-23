@@ -820,7 +820,7 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 	local name = selected_item.name:lower()
 
 	-- for adding new items to the listtttt
-	Clipboard.put(name)
+	--Clipboard.put(name)
 
 	-- Remove any previous "Obtained From:" elements in _side_panel_widgets
 	if self._side_panel_widgets then
@@ -906,6 +906,36 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 				"content/items/characters/player/human/backpacks/empty_backpack",
 				"content/items/animations/end_of_round/end_of_round_adamant_001",
 				"content/items/characters/companion/companion_dog/gear_full/companion_dog_set_03_var_01",
+				"content/items/characters/player/human/gear_head/cryptic_headgear_10_var_04",
+				"content/items/characters/player/human/gear_head/cryptic_headgear_10_var_01",
+				"content/items/characters/player/human/gear_head/cryptic_headgear_10_var_02",
+				"content/items/characters/player/human/gear_head/cryptic_headgear_10_var_03",
+				"content/items/characters/companion/companion_servo_skull/gear_full/cryptic_servo_skull_scanning_var_01",
+				"content/items/characters/player/human/gear_upperbody/cryptic_upperbody_b_var_04",
+				"content/items/characters/player/human/gear_upperbody/cryptic_upperbody_b_var_01",
+				"content/items/characters/player/human/gear_upperbody/cryptic_upperbody_b_var_02",
+				"content/items/characters/player/human/gear_upperbody/cryptic_upperbody_b_var_03",
+				"content/items/characters/player/human/gear_lowerbody/cryptic_lowerbody_b_var_04",
+				"content/items/characters/player/human/gear_lowerbody/cryptic_lowerbody_b_var_01",
+				"content/items/characters/player/human/gear_lowerbody/cryptic_lowerbody_b_var_02",
+				"content/items/characters/player/human/gear_lowerbody/cryptic_lowerbody_b_var_03",
+				"content/items/characters/player/human/backpacks/cryptic_backpack_d_var_01",
+				"content/items/titles/penances/title_achievement_103",
+				"content/items/animations/emotes/emote_cryptic_unique_001",
+				"content/items/characters/player/human/gear_head/broker_headgear_15_var_03",
+				"content/items/characters/player/human/gear_head/broker_headgear_15_var_02",
+				"content/items/characters/player/human/gear_head/broker_headgear_15_var_01",
+				"content/items/characters/player/human/gear_head/broker_headgear_15_var_04",
+				"content/items/characters/player/human/gear_upperbody/broker_upperbody_progression_a_var_03",
+				"content/items/characters/player/human/gear_upperbody/broker_upperbody_progression_a_var_02",
+				"content/items/characters/player/human/gear_upperbody/broker_upperbody_progression_a_var_01",
+				"content/items/characters/player/human/gear_upperbody/broker_upperbody_progression_a_var_04",
+				"content/items/characters/player/human/gear_lowerbody/broker_lowerbody_progression_a_var_03",
+				"content/items/characters/player/human/gear_lowerbody/broker_lowerbody_progression_a_var_02",
+				"content/items/characters/player/human/gear_lowerbody/broker_lowerbody_progression_a_var_01",
+				"content/items/characters/player/human/gear_lowerbody/broker_lowerbody_progression_a_var_04",
+				"content/items/animations/end_of_round/end_of_round_broker_003",
+				"content/items/animations/end_of_round/end_of_round_cryptic_001",
 			},
 		},
 		{ -- Pre-order
