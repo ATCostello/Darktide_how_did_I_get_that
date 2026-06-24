@@ -598,7 +598,6 @@ mod.display_commisary_weapon_view = function(self, selected_item)
 			end
 		end
 
-		mod:echo("selected_item_cost: " .. tostring(selected_item_cost) .. " : " .. tostring(offer_found))
 		-- if no cost was found, should be set as a redacted item
 		if not offer_found or selected_item_cost and selected_item_cost == 0 or selected_item_cost == nil then
 			mod.fetch_unknown_item_source_text(self, selected_item, 1)
