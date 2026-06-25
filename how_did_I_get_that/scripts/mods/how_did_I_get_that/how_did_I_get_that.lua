@@ -570,6 +570,10 @@ end
 ---@param selected_item any The selected item from the _preview_element function.
 ------------------------------------------------------------------------------------------------------
 mod.display_commisary_weapon_view = function(self, selected_item)
+	if not selected_item then
+		return
+	end
+
 	mod.cache_commissary_cosmetics(self)
 
 	local item_name = selected_item.display_name
@@ -613,6 +617,10 @@ end
 ------------------------------------------------------------------------------------------------------
 mod.display_penances_weapon_view = function(self, selected_item)
 	local penance_list = {}
+
+	if not selected_item then
+		return
+	end
 
 	local item_penance = AchievementUIHelper.get_acheivement_by_reward_item(selected_item)
 
@@ -767,6 +775,10 @@ mod.display_hestias_blessings_weapon_view = function(self, selected_item)
 	local item_name = nil
 	local item = nil
 
+	if not selected_item then
+		return
+	end
+
 	if selected_item and selected_item.__master_item and selected_item.__master_item.name then
 		item_name = selected_item.__master_item.name
 		item = selected_item.__master_item
@@ -815,6 +827,10 @@ mod.display_hestias_blessings_weapon_view = function(self, selected_item)
 end
 
 mod.fetch_unknown_item_source_text = function(self, selected_item, source)
+	if not selected_item then
+		return
+	end
+
 	local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
 	local name = selected_item.name:lower()
 
@@ -1099,7 +1115,7 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 
 		if not found and entry.extra_names then
 			for _, ename in ipairs(entry.extra_names) do
-				if selected_item.name == ename then
+				if selected_item.name and selected_item.name == ename then
 					found = entry
 					break
 				end
@@ -1108,7 +1124,7 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 
 		if not found then
 			for _, pat in ipairs(entry.patterns) do
-				if string.find(selected_item.source, pat, 1, true) then
+				if selected_item.source and string.find(selected_item.source, pat, 1, true) then
 					found = entry
 					break
 				end
@@ -1119,7 +1135,7 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 			break
 		end
 	end
-
+	
 	local description = found and found.desc_key and mod:localize(found.desc_key) or mod:localize("redacted")
 
 	-- 0 = character, 1 = weapon.
