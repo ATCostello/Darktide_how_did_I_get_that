@@ -1,5 +1,5 @@
 local mod = get_mod("how_did_I_get_that")
-mod.version = "2.6.03"
+mod.version = "2.6.04"
 mod:info("How Did I Get That is installed, using version: " .. tostring(mod.version))
 
 local colours = {

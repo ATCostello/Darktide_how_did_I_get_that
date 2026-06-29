@@ -20,9 +20,12 @@ local InventoryCosmeticsViewDefinitions =
 	require("scripts/ui/views/inventory_cosmetics_view/inventory_cosmetics_view_definitions")
 
 local ViewElementBase = require("scripts/ui/view_elements/view_element_base")
+local Promise = require("scripts/foundation/utilities/promise")
+local Archetypes = require("scripts/settings/archetype/archetypes")
 
 local PENANCE_TRACK_ID = "dec942ce-b6ba-439c-95e2-022c5d71394d"
 local commisary_cache
+local commisary_cache_promise
 local hestias_rewards_cache = {}
 local current_penance_points = 0
 
@@ -39,6 +42,7 @@ end)
 mod:hook_safe(CLASS.InventoryCosmeticsView, "on_exit", function(self)
 	-- clear cache
 	commisary_cache = nil
+	commisary_cache_promise = nil
 	hestias_rewards_cache = {}
 end)
 
@@ -52,6 +56,7 @@ end)
 mod:hook_safe(CLASS.InventoryWeaponCosmeticsView, "on_exit", function(self)
 	-- clear cache
 	commisary_cache = nil
+	commisary_cache_promise = nil
 	hestias_rewards_cache = {}
 end)
 
@@ -357,9 +362,7 @@ mod.display_commisary_inventory_view = function(self, selected_item)
 	local selected_item_cost = 0
 	local offer_found = false
 
-	if commisary_cache ~= nil then
-		local offers = commisary_cache.offers
-
+	local function _display_offer(offers)
 		for i = 1, #offers do
 			local offer = offers[i]
 			local offer_sku_name = offer.sku.name
@@ -369,7 +372,6 @@ mod.display_commisary_inventory_view = function(self, selected_item)
 				local text = Localize("loc_cosmetics_vendor_view_title")
 					.. mod:localize("ordo_docket_amount_text"):gsub("!content", mod.format_number(selected_item_cost))
 
-				-- add new widgets...
 				local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
 				mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, -70)
 				mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, text, -40)
@@ -377,12 +379,21 @@ mod.display_commisary_inventory_view = function(self, selected_item)
 			end
 		end
 
-		-- if no cost was found, should be set as a redacted item
 		if not offer_found or selected_item_cost and selected_item_cost == 0 or selected_item_cost == nil then
 			mod.fetch_unknown_item_source_text(self, selected_item, 0)
 		end
+	end
+
+	if commisary_cache ~= nil then
+		_display_offer(commisary_cache.offers)
 	else
-		mod.cache_commissary_cosmetics(self)
+		mod.cache_commissary_cosmetics(self):next(function(cache)
+			if cache then
+				_display_offer(cache.offers)
+			else
+				mod.fetch_unknown_item_source_text(self, selected_item, 0)
+			end
+		end)
 	end
 end
 
@@ -574,27 +585,21 @@ mod.display_commisary_weapon_view = function(self, selected_item)
 		return
 	end
 
-	mod.cache_commissary_cosmetics(self)
-
-	local item_name = selected_item.display_name
+	local item_name = selected_item.display_name or selected_item.__master_item.display_name or nil
 	local selected_item_cost = 0
 	local offer_found = false
 
-	if commisary_cache ~= nil then
-		local offers = commisary_cache.offers
-
+	local function _display_offer(offers)
 		for i = 1, #offers do
 			local offer = offers[i]
 			local offer_sku_name = offer.sku.name
 
-			-- offer found
 			if item_name == offer_sku_name then
 				selected_item_cost = offer.price.amount.amount
 
 				local text = Localize("loc_cosmetics_vendor_view_title")
 					.. mod:localize("ordo_docket_amount_text"):gsub("!content", mod.format_number(selected_item_cost))
 
-				-- add new widgets...
 				local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
 				mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, -70)
 				mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, text, -40)
@@ -602,12 +607,21 @@ mod.display_commisary_weapon_view = function(self, selected_item)
 			end
 		end
 
-		-- if no cost was found, should be set as a redacted item
-		if not offer_found or selected_item_cost and selected_item_cost == 0 or selected_item_cost == nil then
+		if not offer_found or (selected_item_cost and selected_item_cost == 0) or selected_item_cost == nil then
 			mod.fetch_unknown_item_source_text(self, selected_item, 1)
 		end
+	end
+
+	if commisary_cache ~= nil then
+		_display_offer(commisary_cache.offers)
 	else
-		mod.cache_commissary_cosmetics(self)
+		mod.cache_commissary_cosmetics(self):next(function(cache)
+			if cache then
+				_display_offer(cache.offers)
+			else
+				mod.fetch_unknown_item_source_text(self, selected_item, 1)
+			end
+		end)
 	end
 end
 
@@ -1135,7 +1149,7 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 			break
 		end
 	end
-	
+
 	local description = found and found.desc_key and mod:localize(found.desc_key) or mod:localize("redacted")
 
 	-- 0 = character, 1 = weapon.
@@ -1247,17 +1261,59 @@ end
 --- Caches cosmetic items of the commisary rewards.
 ------------------------------------------------------------------------------------------------------
 mod.cache_commissary_cosmetics = function(self)
-	if commisary_cache == nil then
-		Managers.data_service.store:get_credits_cosmetics_store():next(function(data)
-			Managers.data_service.store:get_credits_weapon_cosmetics_store():next(function(data2)
-				for k, v in pairs(data2.offers) do
-					table.insert(data.offers, v)
-				end
-
-				commisary_cache = data
-			end)
-		end)
+	if commisary_cache then
+		return Promise.resolved(commisary_cache)
 	end
+
+	if commisary_cache_promise then
+		return commisary_cache_promise
+	end
+
+	local all_promises = {}
+	local store_service = Managers.data_service.store
+
+	for archetype_name, _ in pairs(Archetypes) do
+		local cosmetics_promise = store_service:get_credits_cosmetics_store(archetype_name):catch(function(error)
+			mod:error("Failed to cache commissary cosmetics store for %s: %s", archetype_name, tostring(error))
+			return { offers = {} }
+		end)
+		all_promises[#all_promises + 1] = cosmetics_promise
+
+		local weapon_cosmetics_promise = store_service
+			:get_credits_weapon_cosmetics_store(archetype_name)
+			:catch(function(error)
+				mod:error(
+					"Failed to cache commissary weapon cosmetics store for %s: %s",
+					archetype_name,
+					tostring(error)
+				)
+				return { offers = {} }
+			end)
+		all_promises[#all_promises + 1] = weapon_cosmetics_promise
+	end
+
+	commisary_cache_promise = Promise.all(unpack(all_promises))
+		:next(function(results)
+			local combined_offers = {}
+			for i = 1, #results do
+				local offers = results[i].offers
+				if offers then
+					for j = 1, #offers do
+						combined_offers[#combined_offers + 1] = offers[j]
+					end
+				end
+			end
+			commisary_cache = { offers = combined_offers }
+
+			return commisary_cache
+		end)
+		:catch(function(error)
+			mod:error("Failed to cache commissary store: " .. tostring(error))
+			commisary_cache_promise = nil
+			return nil
+		end)
+
+	return commisary_cache_promise
 end
 
 ------------------------------------------------------------------------------------------------------
