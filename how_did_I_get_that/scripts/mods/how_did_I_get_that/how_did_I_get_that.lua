@@ -404,7 +404,7 @@ end
 mod.display_penances_inventory_view = function(self, selected_item)
 	local penance_list = {}
 
-	local item_penance = AchievementUIHelper.get_acheivement_by_reward_item(selected_item)
+	local item_penance = AchievementUIHelper.get_achievement_by_reward_item(selected_item)
 
 	if item_penance then
 		local requiredPenances = {}
@@ -636,7 +636,7 @@ mod.display_penances_weapon_view = function(self, selected_item)
 		return
 	end
 
-	local item_penance = AchievementUIHelper.get_acheivement_by_reward_item(selected_item)
+	local item_penance = AchievementUIHelper.get_achievement_by_reward_item(selected_item)
 
 	if item_penance then
 		local requiredPenances = {}
