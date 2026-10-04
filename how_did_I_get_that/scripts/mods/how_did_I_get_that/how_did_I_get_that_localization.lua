@@ -1,5 +1,5 @@
 local mod = get_mod("how_did_I_get_that")
-mod.version = "2.6.07"
+mod.version = "2.6.08"
 mod:info("How Did I Get That is installed, using version: " .. tostring(mod.version))
 
 local colours = {
@@ -48,7 +48,7 @@ mod.gradientText = function(text, startColor, endColor, colorSpaces)
 		end
 	end
 
-	result = "{#color(" .. colours.title .. ")}" .. result .. "{#reset()}"
+	result = "{#color(" .. colours.title .. ")} " .. result .. "{#reset()}"
 	return result
 end
 
@@ -543,6 +543,24 @@ mod.localisation = {
 		ru = "Событие: Еретические артефакты, июнь 2026",
 		["zh-cn"] = "限时活动：异端圣物，2026年6月",
 		["zh-tw"] = "限時活動：異端聖物，2026年6月",
+	},
+	gw_items = {
+		en = "Games Workshop Exclusive",
+	},
+	live_event_shambling_horrors = {
+		en = "Live Event: Shambling Horrors, Aug 2026",
+	},
+	live_event_arcane_ruin = {
+		en = "Live Event: Arcane Ruin, 2026",
+	},
+	live_event_heretic_raiders = {
+		en = "Live Event: Heretic Raiders, 2026",
+	},
+	warhammer_plus = {
+		en = "Warhammer+ Subscriber",
+	},
+	live_event_grandfather_gifts_2026 = {
+		en = "Live Event: Grandfather Gifts, 2026",
 	},
 }
 

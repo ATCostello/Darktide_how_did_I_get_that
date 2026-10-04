@@ -965,6 +965,10 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 				"content/items/characters/player/human/gear_lowerbody/broker_lowerbody_progression_a_var_04",
 				"content/items/animations/end_of_round/end_of_round_broker_003",
 				"content/items/animations/end_of_round/end_of_round_cryptic_001",
+				"content/items/2d/portrait_frames/class_broker_rail_01",
+				"content/items/2d/portrait_frames/class_broker_carnival_01",
+				"content/items/2d/portrait_frames/class_broker_steel_01",
+				"content/items/2d/portrait_frames/class_broker_water_01",
 			},
 		},
 		{ -- Pre-order
@@ -1010,7 +1014,16 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 		{ -- Grandfathers Gifts Live Event
 			patterns = {},
 			desc_key = "live_event_grandfather_gifts",
-			extra_names = { "content/items/2d/portrait_frames/events_poxwalker" },
+			extra_names = {
+				"content/items/2d/portrait_frames/events_poxwalker",
+			},
+		},
+		{ -- Grandfathers Gifts Live Event
+			patterns = {},
+			desc_key = "live_event_grandfather_gifts_2026",
+			extra_names = {
+				"content/items/2d/insignias/insignia_event_nurgle_explosion_2026",
+			},
 		},
 		{ -- Developer Exclusive
 			patterns = {},
@@ -1114,6 +1127,31 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 			patterns = {},
 			desc_key = "live_event_heretical_artefacts",
 			extra_names = { "content/items/2d/portrait_frames/portrait_frame_event_leftover" },
+		},
+		{ -- special gw frame
+			patterns = {},
+			desc_key = "gw_items",
+			extra_names = { "content/items/2d/portrait_frames/special_gw" },
+		},
+		{ -- live_event_shambling_horrors
+			patterns = {},
+			desc_key = "live_event_shambling_horrors",
+			extra_names = { "content/items/2d/insignias/insignia_event_endless_hordes" },
+		},
+		{ -- live_event_heretic_raiders
+			patterns = {},
+			desc_key = "live_event_heretic_raiders",
+			extra_names = { "content/items/2d/insignias/insignia_event_barren" },
+		},
+		{ -- live_event_arcane_ruin
+			patterns = {},
+			desc_key = "live_event_arcane_ruin",
+			extra_names = { "content/items/2d/portrait_frames/events_torment_global_01" },
+		},
+		{ -- warhammer_plus
+			patterns = {"warhammerplus"},
+			desc_key = "warhammer_plus",
+			extra_names = { "content/items/2d/portrait_frames/portrait_frame_warhammerplus" },
 		},
 	}
 
