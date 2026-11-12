@@ -204,6 +204,10 @@ end
 mod.display_obtained_cosmetic_view = function(self)
 	local selected_item = self._previewed_item
 
+	if not selected_item then
+		return
+	end
+
 	local selected_item_source = selected_item.source -- 1 = Penance, 2 = Commisary, 3 = Commodore's Vestures, 4 = Hestia's Blessings
 
 	-- Hide penance view if present
@@ -1146,12 +1150,20 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 		{ -- live_event_arcane_ruin
 			patterns = {},
 			desc_key = "live_event_arcane_ruin",
-			extra_names = { "content/items/2d/portrait_frames/events_torment_global_01" },
+			extra_names = {
+				"content/items/2d/portrait_frames/events_torment_global_01",
+				"content/items/weapons/player/trinkets/live_event/trinket_live_event_torment_01",
+			},
 		},
 		{ -- warhammer_plus
-			patterns = {"warhammerplus"},
+			patterns = { "warhammerplus" },
 			desc_key = "warhammer_plus",
 			extra_names = { "content/items/2d/portrait_frames/portrait_frame_warhammerplus" },
+		},
+		{ -- live_event_allies_adversaries
+			patterns = {},
+			desc_key = "live_event_allies_adversaries",
+			extra_names = { "content/items/2d/insignias/insignia_event_play_spillway" },
 		},
 	}
 
@@ -1188,7 +1200,21 @@ mod.fetch_unknown_item_source_text = function(self, selected_item, source)
 		end
 	end
 
-	local description = found and found.desc_key and mod:localize(found.desc_key) or mod:localize("redacted")
+	-- use base-game new localisations for live event rewards if found...
+	local base_desc = nil
+	if selected_item and selected_item.name then
+		if selected_item.source and selected_item.source == "live_event" or not found then
+			base_desc = Items.obtained_display_name(selected_item)
+		end
+	elseif selected_item and selected_item.__master_item and selected_item.__master_item.name then
+		if selected_item.__master_item.source and selected_item.__master_item.source == "live_event" or not found then
+			base_desc = Items.obtained_display_name(selected_item.__master_item)
+		end
+	end
+
+	local description = base_desc
+		or (found and found.desc_key and mod:localize(found.desc_key))
+		or (mod:localize("redacted"))
 
 	-- 0 = character, 1 = weapon.
 	if source == 0 then

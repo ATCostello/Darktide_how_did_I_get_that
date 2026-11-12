@@ -1,5 +1,5 @@
 local mod = get_mod("how_did_I_get_that")
-mod.version = "2.6.08"
+mod.version = "2.6.09"
 mod:info("How Did I Get That is installed, using version: " .. tostring(mod.version))
 
 local colours = {
@@ -561,6 +561,9 @@ mod.localisation = {
 	},
 	live_event_grandfather_gifts_2026 = {
 		en = "Live Event: Grandfather Gifts, 2026",
+	},
+	live_event_allies_adversaries = {
+		en = "Live Event: Allies & Adversaries, 2026",
 	},
 }
 
