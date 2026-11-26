@@ -11,8 +11,14 @@ local function gradient_text(text, start_colour, end_colour, colour_spaces)
 	local start_r, start_g, start_b = start_colour[1], start_colour[2], start_colour[3]
 	local end_r, end_g, end_b = end_colour[1], end_colour[2], end_colour[3]
 
-	if type(start_r) ~= "number" or type(start_g) ~= "number" or type(start_b) ~= "number" or
-		type(end_r) ~= "number" or type(end_g) ~= "number" or type(end_b) ~= "number" then
+	if
+		type(start_r) ~= "number"
+		or type(start_g) ~= "number"
+		or type(start_b) ~= "number"
+		or type(end_r) ~= "number"
+		or type(end_g) ~= "number"
+		or type(end_b) ~= "number"
+	then
 		return ""
 	end
 
