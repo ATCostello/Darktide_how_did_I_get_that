@@ -188,8 +188,6 @@ end
 
 -- Removes all default "Obtained from:" elements so that I can add my own easier and more consistently...
 local remove_obtained_from_elements = function(self)
-	local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
-
 	if self._side_panel_widgets then
 		local widgets = self._side_panel_widgets
 		local i = #widgets
@@ -492,23 +490,11 @@ mod.display_penances_inventory_view = function(self, selected_item)
 			end
 		end
 
-		-- Remove any previous "Obtained From:" elements in _side_panel_widgets
-		local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
-
 		if self._side_panel_widgets then
 			local widgets = self._side_panel_widgets
 			local i = #widgets
 			while i > 0 do
-				local widget = widgets[i]
 				table.remove(widgets, i)
-
-				if widget and widget.content and widget.content.text and type(widget.content.text) == "string" then
-					-- Remove if matches or contains the localized "Obtained From:" string
-					if string.find(widget.content.text, obtained_desc, 1, true) then
-						table.remove(widgets, i)
-						table.remove(widgets, i)
-					end
-				end
 				i = i - 1
 			end
 		end
@@ -521,6 +507,8 @@ mod.display_penances_inventory_view = function(self, selected_item)
 		if #penance_list > 1 then
 			text = mod:localize("penance_amount_multiple_text"):gsub("!content", mod.format_number(#penance_list))
 		end
+
+		local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
 
 		if text ~= "" then
 			mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, -70)
@@ -729,23 +717,11 @@ mod.display_penances_weapon_view = function(self, selected_item)
 			end
 		end
 
-		-- Remove any previous "Obtained From:" elements in _side_panel_widgets
-		local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
-
 		if self._side_panel_widgets then
 			local widgets = self._side_panel_widgets
 			local i = #widgets
 			while i > 0 do
-				local widget = widgets[i]
 				table.remove(widgets, i)
-
-				if widget and widget.content and widget.content.text and type(widget.content.text) == "string" then
-					-- Remove if matches or contains the localized "Obtained From:" string
-					if string.find(widget.content.text, obtained_desc, 1, true) then
-						table.remove(widgets, i)
-						table.remove(widgets, i)
-					end
-				end
 				i = i - 1
 			end
 		end
@@ -758,6 +734,8 @@ mod.display_penances_weapon_view = function(self, selected_item)
 		if #penance_list > 1 then
 			text = mod:localize("penance_amount_multiple_text"):gsub("!content", mod.format_number(#penance_list))
 		end
+
+		local obtained_desc = string.upper(Localize("loc_item_source_obtained_title"))
 
 		mod.create_text_widget(self, InventoryViewDefinitions.big_header_text_pass, obtained_desc, -70)
 		mod.create_text_widget(self, InventoryViewDefinitions.big_body_text_pass, text, -40)
